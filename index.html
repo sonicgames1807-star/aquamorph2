@@ -1,0 +1,5506 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#061b2a">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23061b2a'/%3E%3Cpath d='M5 16Q13 4 22 16Q13 28 5 16ZM22 16L28 10V22Z' fill='none' stroke='%239de5f2' stroke-width='2'/%3E%3C/svg%3E">
+<meta name="description" content="Локальный объёмный аквариум: вода, обитатели и фотографии на трёхмерных формах. Без регистрации и API.">
+<title>AquaMorph — твоя тихая глубина</title>
+<style>
+:root {
+  color-scheme: dark;
+  --panel: #071b29f5;
+  --panel-solid: #0a2130;
+  --fg: #eef7fb;
+  --muted: #b0c7d4;
+  --line: #557385;
+  --accent: #9de5f2;
+  --accent-ink: #062735;
+  --hover: #183b4d;
+  --error: #ffc8ba;
+  --field: #102f40;
+  --shadow: 0 16px 60px #0005;
+  font:
+    16px/1.5 -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #041421;
+  color: var(--fg);
+  overflow: hidden;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 9px 16px;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  line-height: 1.35;
+  touch-action: manipulation;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
+}
+button:hover:not(:disabled) {
+  background: var(--hover);
+}
+button:active:not(:disabled) {
+  filter: brightness(0.9);
+}
+button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+button.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: transparent;
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) {
+  background: #c6f2f8;
+}
+.danger {
+  color: var(--error);
+}
+button.icon-button {
+  width: 44px;
+  padding: 10px;
+  flex-shrink: 0;
+}
+svg.icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+a:focus-visible,
+canvas:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+input[type="range"] {
+  height: 44px;
+  width: 100%;
+  accent-color: var(--accent);
+  margin: 0;
+}
+input[type="text"],
+input[type="number"],
+select {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--fg);
+  font-size: 16px;
+}
+label {
+  display: block;
+  font-size: 14px;
+  margin: 12px 0 4px;
+}
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.check-label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  margin: 4px 0;
+  font-size: 14px;
+}
+.check-label input {
+  margin: 0;
+}
+.range {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.range output {
+  width: 52px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+h1 {
+  font-size: 38px;
+  font-weight: 450;
+  letter-spacing: -1.4px;
+  line-height: 1.1;
+}
+h2 {
+  font-size: 24px;
+  font-weight: 550;
+  letter-spacing: -0.6px;
+  line-height: 1.2;
+}
+h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+p {
+  max-width: 60ch;
+  text-wrap: pretty;
+}
+.hint {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.stack {
+  display: grid;
+  gap: 12px;
+}
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.row.stretch > * {
+  flex: 1;
+}
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.line {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 20px 0;
+}
+[hidden] {
+  display: none !important;
+}
+#ocean {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  outline-offset: -4px;
+  cursor: grab;
+}
+#ocean:active {
+  cursor: grabbing;
+}
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 32px;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(#00111c9c, transparent);
+}
+.topbar > * {
+  pointer-events: auto;
+}
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #8bdced88;
+  border-radius: 50%;
+  color: #b7edf5;
+}
+.brand-name {
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.8px;
+}
+.brand-sub {
+  font-size: 14px;
+  color: #b9d2df;
+}
+.top-actions {
+  display: flex;
+  gap: 8px;
+}
+.top-actions button {
+  background: #062435b8;
+  backdrop-filter: blur(12px);
+}
+.top-actions button.primary {
+  background: #b5eaf3;
+  color: #062735;
+}
+.intro {
+  position: fixed;
+  left: 36px;
+  bottom: 116px;
+  max-width: 410px;
+  z-index: 1;
+  pointer-events: none;
+  text-shadow: 0 2px 18px #00111ccc;
+}
+.intro .kicker {
+  font-size: 14px;
+  color: #b8e0ec;
+  margin-bottom: 10px;
+}
+.intro p {
+  font-size: 14px;
+  color: #c2d9e5;
+  margin-top: 12px;
+  max-width: 36ch;
+}
+.statusline {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 14px;
+  color: #bed4df;
+}
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #9de5f2;
+}
+.toolbar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid #6c9eb363;
+  border-radius: 999px;
+  background: #061d2be8;
+  box-shadow: 0 8px 40px #0003;
+  backdrop-filter: blur(16px);
+}
+.toolbar button {
+  border: 0;
+  padding: 10px 13px;
+  color: #e8f6fc;
+  white-space: nowrap;
+}
+.toolbar button.icon-button {
+  padding: 10px;
+  width: 44px;
+}
+.toolbar .separator {
+  width: 1px;
+  height: 24px;
+  background: #52758985;
+  margin: 0 2px;
+}
+.corner-actions {
+  position: fixed;
+  right: 32px;
+  bottom: 28px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+.corner-actions button {
+  background: #062435bd;
+  backdrop-filter: blur(12px);
+}
+#revealUI {
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  z-index: 5;
+  background: #092b3cdd;
+}
+.ui-hidden .topbar,
+.ui-hidden .intro,
+.ui-hidden .toolbar,
+.ui-hidden .corner-actions,
+.ui-hidden #drawer {
+  display: none;
+}
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 94px;
+  transform: translateX(-50%);
+  padding: 12px 18px;
+  border-radius: 10px;
+  max-width: min(90vw, 600px);
+  background: var(--panel);
+  color: var(--fg);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  z-index: 12;
+  border: 1px solid var(--line);
+}
+.toast.error {
+  color: var(--error);
+}
+#drawer {
+  position: fixed;
+  right: 20px;
+  top: 100px;
+  bottom: 96px;
+  width: 370px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+.panel-header {
+  padding: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+.panel-header h2 {
+  font-size: 22px;
+}
+.panel-body {
+  padding: 20px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+  scrollbar-width: thin;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.tabs button {
+  border: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+.tabs button.active {
+  background: var(--hover);
+  color: var(--accent);
+}
+.species-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+.species-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid #5475896e;
+  border-radius: 10px;
+  background: #11334766;
+  cursor: pointer;
+  text-align: left;
+  min-height: 130px;
+}
+.species-card:hover {
+  background: var(--hover);
+}
+.species-card.selected {
+  border-color: var(--accent);
+  background: var(--hover);
+}
+.species-card img {
+  width: 100%;
+  height: 70px;
+  object-fit: contain;
+  display: block;
+}
+.species-card strong {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.3;
+}
+.species-card span {
+  font-size: 14px;
+  color: var(--muted);
+}
+.species-card button {
+  min-height: 36px;
+  padding: 5px 8px;
+  font-size: 14px;
+  margin-top: 3px;
+}
+.species-card .select-species {
+  border: 0;
+  padding: 0;
+  display: block;
+  background: transparent;
+  border-radius: 0;
+  text-align: left;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+}
+.add-box {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.fish-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #52758955;
+}
+.fish-select {
+  text-align: left;
+  border: 0;
+  border-radius: 8px;
+  justify-content: flex-start;
+  padding: 8px;
+  width: 100%;
+  min-width: 0;
+}
+.fish-select span {
+  overflow-wrap: anywhere;
+}
+.pill {
+  font-size: 14px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  display: inline-block;
+  color: var(--muted);
+}
+.section-title {
+  margin: 20px 0 8px;
+}
+.empty-state {
+  padding: 24px 0;
+  color: var(--muted);
+}
+.selected-panel {
+  position: fixed;
+  left: 32px;
+  top: 108px;
+  width: 260px;
+  z-index: 3;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.selected-panel .row {
+  margin-top: 12px;
+}
+.selected-panel button {
+  font-size: 14px;
+  padding: 8px 12px;
+}
+.selected-panel h2 {
+  font-size: 20px;
+  word-break: break-word;
+}
+.selected-panel .hint {
+  margin-top: 6px;
+}
+details {
+  margin-top: 14px;
+}
+summary {
+  cursor: pointer;
+  min-height: 44px;
+  align-content: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+.diagnostics {
+  font:
+    12px/1.5 ui-monospace,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--field);
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+dialog {
+  max-width: 760px;
+  width: calc(100% - 32px);
+  max-height: 90dvh;
+  overflow: auto;
+  background: var(--panel-solid);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0;
+  box-shadow: var(--shadow);
+}
+dialog::backdrop {
+  background: #00111eb8;
+  backdrop-filter: blur(5px);
+}
+dialog .panel-header {
+  position: sticky;
+  top: 0;
+  background: var(--panel-solid);
+  z-index: 2;
+}
+dialog .dialog-body {
+  padding: 24px;
+}
+dialog .dialog-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  position: sticky;
+  bottom: 0;
+  background: var(--panel-solid);
+}
+.editor-grid {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 24px;
+}
+.editor-visual {
+  position: sticky;
+  top: 0;
+  align-self: start;
+}
+.preview-frame {
+  position: relative;
+  background: #061a27;
+  border: 1px solid #365667;
+  border-radius: 10px;
+  overflow: hidden;
+}
+#previewCanvas {
+  width: 100%;
+  height: 250px;
+  display: block;
+  touch-action: none;
+}
+.preview-rotate {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.preview-rotate button {
+  font-size: 14px;
+  padding: 8px 12px;
+}
+.source-photo {
+  width: 100%;
+  height: 130px;
+  object-fit: contain;
+  background: #061a27;
+  border-radius: 8px;
+  display: block;
+  margin-top: 16px;
+}
+.editor-visual .hint {
+  margin-top: 10px;
+}
+.editor-options label:first-child {
+  margin-top: 0;
+}
+.editor-options details label {
+  margin-top: 10px;
+}
+.file-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 14px;
+  cursor: pointer;
+  margin: 8px 0;
+}
+.error-box {
+  color: var(--error);
+  font-size: 14px;
+  min-height: 0;
+  margin-top: 12px;
+}
+.guide-list {
+  padding-left: 22px;
+}
+.guide-list li {
+  margin: 12px 0;
+}
+.dialog-body p + p {
+  margin-top: 12px;
+}
+#snapshotImage {
+  display: block;
+  max-width: 100%;
+  max-height: 60dvh;
+  object-fit: contain;
+  margin: 16px auto;
+}
+.download-link {
+  color: var(--accent);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.load-screen {
+  position: fixed;
+  inset: 0;
+  background: #051c2a;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px;
+  text-align: center;
+}
+.load-screen strong {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -1px;
+}
+.load-screen p {
+  font-size: 14px;
+  color: #bfd7e4;
+  max-width: 50ch;
+}
+.loader-ring {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #7cbdcd55;
+  border-top-color: #a5e5f2;
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.skip {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: 30;
+  background: var(--panel-solid);
+  padding: 10px;
+  color: var(--accent);
+}
+.skip:focus {
+  top: 8px;
+}
+#saveState {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.small-separator {
+  color: #668e9f;
+  margin: 0 8px;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --panel: #f7fafbf5;
+  --panel-solid: #f7fafb;
+  --fg: #153142;
+  --muted: #466172;
+  --line: #7994a3;
+  --accent: #07566f;
+  --accent-ink: #fff;
+  --hover: #e1edf2;
+  --error: #a32f36;
+  --field: #fff;
+}
+.species-card {
+  color: var(--fg);
+}
+:root[data-theme="light"] .species-card {
+  background: #e7f0f4;
+}
+:root[data-theme="light"] button.primary {
+  background: #07566f;
+  color: #fff;
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme="system"] {
+    color-scheme: light;
+    --panel: #f7fafbf5;
+    --panel-solid: #f7fafb;
+    --fg: #153142;
+    --muted: #466172;
+    --line: #7994a3;
+    --accent: #07566f;
+    --accent-ink: #fff;
+    --hover: #e1edf2;
+    --error: #a32f36;
+    --field: #fff;
+  }
+  :root[data-theme="system"] .species-card {
+    background: #e7f0f4;
+  }
+}
+@media (max-width: 900px) {
+  .corner-actions {
+    right: 16px;
+    bottom: 90px;
+  }
+  .intro {
+    left: 24px;
+    bottom: 116px;
+    max-width: 300px;
+  }
+  .intro h1 {
+    font-size: 32px;
+  }
+  .intro p {
+    max-width: 30ch;
+  }
+  .topbar {
+    padding: 20px;
+  }
+  .brand-sub {
+    display: none;
+  }
+  .top-actions button {
+    padding: 9px 12px;
+  }
+  .top-actions .button-text.long {
+    display: none;
+  }
+  .selected-panel {
+    left: 20px;
+    top: 90px;
+    width: 235px;
+  }
+}
+@media (max-width: 600px) {
+  .topbar {
+    padding: calc(14px + env(safe-area-inset-top)) 16px 18px;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand {
+    gap: 8px;
+  }
+  .brand-name {
+    font-size: 20px;
+  }
+  .brand-icon {
+    width: 30px;
+    height: 30px;
+  }
+  .brand-icon svg {
+    width: 18px;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .top-actions button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  .top-actions #openCatalog {
+    width: 44px;
+    padding: 10px;
+  }
+  .top-actions #openCatalog .button-text {
+    display: none;
+  }
+  .intro {
+    left: 20px;
+    right: 20px;
+    bottom: calc(112px + env(safe-area-inset-bottom));
+    max-width: 270px;
+  }
+  .intro h1 {
+    font-size: 30px;
+    letter-spacing: -1px;
+  }
+  .intro .kicker {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  .intro p {
+    font-size: 14px;
+    margin-top: 8px;
+    max-width: 25ch;
+  }
+  .intro .statusline {
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  .toolbar {
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    gap: 2px;
+    padding: 6px;
+    max-width: calc(100vw - 28px);
+  }
+  .toolbar button {
+    padding: 10px;
+  }
+  .toolbar .label-desktop {
+    display: none;
+  }
+  .toolbar button.icon-button {
+    width: 44px;
+  }
+  .toolbar .separator {
+    margin: 0 1px;
+  }
+  .corner-actions {
+    right: 16px;
+    bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+  .corner-actions #helpButton {
+    display: none;
+  }
+  .corner-actions button {
+    width: 44px;
+    padding: 10px;
+  }
+  #drawer {
+    left: 8px;
+    right: 8px;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    max-height: 76dvh;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .panel-header {
+    padding: 16px;
+  }
+  .panel-body {
+    padding: 16px;
+  }
+  .panel-header h2 {
+    font-size: 22px;
+  }
+  .tabs {
+    padding: 6px 10px;
+  }
+  .toast {
+    bottom: calc(82px + env(safe-area-inset-bottom));
+    min-width: 230px;
+    max-width: calc(100vw - 32px);
+  }
+  .selected-panel {
+    left: 16px;
+    right: 16px;
+    top: 88px;
+    width: auto;
+    max-width: 300px;
+    padding: 12px;
+  }
+  .selected-panel .row {
+    margin-top: 8px;
+  }
+  .selected-panel .hint {
+    font-size: 14px;
+  }
+  .selected-panel h2 {
+    font-size: 18px;
+  }
+  .editor-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .editor-visual {
+    position: static;
+  }
+  .source-photo {
+    height: 90px;
+    width: 100%;
+  }
+  #previewCanvas {
+    height: 190px;
+  }
+  .preview-frame {
+    max-width: 100%;
+  }
+  .editor-visual .preview-rotate {
+    margin-top: 8px;
+  }
+  .editor-visual .hint {
+    font-size: 14px;
+  }
+  dialog {
+    width: calc(100% - 16px);
+    max-height: 92dvh;
+  }
+  dialog .dialog-body {
+    padding: 16px;
+  }
+  dialog .dialog-footer {
+    padding: 12px 16px;
+  }
+  .editor-options .cols {
+    gap: 10px;
+  }
+  .dialog-footer .hint {
+    font-size: 14px;
+    max-width: 140px;
+  }
+  .dialog-footer button {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+  .intro.compact p {
+    display: none;
+  }
+  .top-actions .button-text {
+    white-space: nowrap;
+  }
+  #saveState {
+    display: none;
+  }
+  .species-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-height: 500px) {
+  .intro {
+    bottom: 84px;
+  }
+  .intro h1 {
+    font-size: 24px;
+  }
+  .intro p,
+  .intro .kicker {
+    display: none;
+  }
+  .topbar {
+    padding: 10px 16px;
+  }
+  .toolbar {
+    bottom: 10px;
+  }
+  #drawer {
+    top: 76px;
+    bottom: 76px;
+    max-height: none;
+    left: auto;
+    right: 12px;
+    width: 340px;
+    border-radius: 12px;
+  }
+  .corner-actions {
+    bottom: 76px;
+  }
+  .selected-panel {
+    top: 72px;
+  }
+  .panel-header {
+    padding: 12px 16px;
+  }
+  dialog {
+    max-height: 94dvh;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Final component contracts shared with INTERFACE. */
+body.immersive .topbar,
+body.immersive .intro,
+body.immersive .toolbar,
+body.immersive .corner-actions,
+body.immersive #drawer,
+body.immersive #selection {
+  display: none;
+}
+.catalog-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+.species-silhouette {
+  height: 54px;
+  display: grid;
+  place-items: center;
+}
+.species-silhouette .icon {
+  width: 54px;
+  height: 38px;
+}
+.species-card {
+  cursor: default;
+}
+.species-card h3 {
+  overflow-wrap: anywhere;
+}
+.species-card button {
+  min-height: 44px;
+}
+.tabs button[aria-pressed="true"] {
+  background: var(--hover);
+  color: var(--accent);
+}
+.fish-row {
+  display: flex;
+}
+.fish-row button:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  justify-content: flex-start;
+}
+.empty {
+  padding: 24px 0;
+  color: var(--muted);
+}
+.panel-body > button {
+  margin: 6px 4px 6px 0;
+}
+.panel-body > h3 {
+  margin-top: 20px;
+}
+.panel-body > .hint {
+  margin: 8px 0;
+}
+.intro.muted {
+  opacity: 0.5;
+}
+.editor-visual {
+  top: 80px;
+}
+
+/* The scene stays deep blue; foreground controls keep independent contrast. */
+.brand-name,
+.intro h1 {
+  color: #eef7fb;
+}
+.top-actions button:not(.primary),
+.corner-actions button {
+  color: #eef7fb;
+}
+.intro h1 {
+  display: inline;
+  background: #041b2a99;
+  box-shadow:
+    8px 0 #041b2a99,
+    -4px 0 #041b2a99;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.intro .kicker {
+  margin-bottom: 12px;
+}
+.intro .statusline,
+.intro p {
+  color: #e0eff7;
+}
+.source-photo {
+  border: 1px solid var(--line);
+}
+.catalog-grid .species-card .hint {
+  line-height: 1.4;
+}
+.editor-visual {
+  position: static;
+}
+
+#cropMap {
+  display: block;
+  width: 100%;
+  height: 140px;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 12px 0 0;
+}
+dialog {
+  scroll-padding-top: 100px;
+  scroll-padding-bottom: 100px;
+}
+.catalog-grid img {
+  height: 72px;
+}
+.fish-row input[type="checkbox"] {
+  margin: 0;
+}
+.fish-row > button:last-child {
+  font-size: 14px;
+  padding: 8px;
+}
+.species-card h3 {
+  font-size: 15px;
+}
+.catalog-grid + .primary {
+  margin-top: 8px;
+}
+
+#editor[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#editor .panel-header,
+#editor .dialog-footer {
+  position: static;
+  flex-shrink: 0;
+}
+#editor .dialog-body {
+  overflow: auto;
+  min-height: 0;
+  scroll-padding-top: 16px;
+  scroll-padding-bottom: 24px;
+}
+#editor .editor-visual {
+  position: sticky;
+  top: 0;
+}
+#editor #previewCanvas {
+  height: 220px;
+}
+#editor #cropMap {
+  height: 100px;
+}
+#editor .editor-visual .hint {
+  font-size: 14px;
+}
+#editor .dialog-body label {
+  scroll-margin-top: 16px;
+}
+@media (max-width: 600px) {
+  #editor .editor-visual {
+    position: static;
+  }
+  #editor #previewCanvas {
+    height: 190px;
+  }
+}
+
+/* Scene chrome must not inherit the light panels' hover surface. */
+.toolbar button:hover:not(:disabled),
+.corner-actions button:hover:not(:disabled),
+.top-actions button:not(.primary):hover:not(:disabled) {
+  background: #183b4d;
+  color: #eef7fb;
+}
+:root[data-theme="light"] button.primary:hover:not(:disabled) {
+  background: #06475b;
+  color: #fff;
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme="system"] button.primary:hover:not(:disabled) {
+    background: #06475b;
+    color: #fff;
+  }
+}
+</style></head><body>
+<svg style="display: none" aria-hidden="true">
+  <defs>
+    <symbol id="i-fish" viewBox="0 0 24 24">
+      <path d="M3 12c4-8 11-8 15 0-4 8-11 8-15 0Z" />
+      <path d="m18 12 4-5v10l-4-5" />
+      <circle cx="8" cy="11" r=".6" />
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24">
+      <path d="M12 4v16M4 12h16" />
+    </symbol>
+    <symbol id="i-photo" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <circle cx="8" cy="8" r="1.5" />
+      <path d="m3 17 5-5 4 4 4-5 5 6" />
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24">
+      <path d="m6 6 12 12M18 6 6 18" />
+    </symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24">
+      <path d="M8 5v14M16 5v14" />
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24">
+      <path d="m8 4 12 8-12 8V4Z" />
+    </symbol>
+    <symbol id="i-water" viewBox="0 0 24 24">
+      <path
+        d="M2 6c3-4 5 4 8 0s5 4 8 0 4 0 4 0M2 12c3-4 5 4 8 0s5 4 8 0 4 0 4 0M2 18c3-4 5 4 8 0s5 4 8 0 4 0 4 0"
+      />
+    </symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24">
+      <path d="M8 5 6 8H3v12h18V8h-3l-2-3Z" />
+      <circle cx="12" cy="13" r="4" />
+    </symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24">
+      <path d="M4 10a8 8 0 1 1 2 9M4 4v6h6" />
+    </symbol>
+    <symbol id="i-full" viewBox="0 0 24 24">
+      <path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5" />
+    </symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24">
+      <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </symbol>
+    <symbol id="i-save" viewBox="0 0 24 24">
+      <path d="M4 3h14l3 3v15H3V3h1Z" />
+      <path d="M7 3v6h10V3M7 21v-8h10v8" />
+    </symbol>
+    <symbol id="i-help" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9 9a3 3 0 0 1 6 0c0 2-3 2-3 5m0 3v.1" />
+    </symbol>
+    <symbol id="i-food" viewBox="0 0 24 24">
+      <path d="m5 4 14 2-2 8-13-2Z" />
+      <circle cx="6" cy="18" r="1" />
+      <circle cx="12" cy="20" r="1" />
+      <circle cx="17" cy="17" r="1" />
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+      <path d="M3 6h18M8 6V3h8v3M5 6l1 15h12l1-15M10 10v7m4-7v7" />
+    </symbol>
+  </defs>
+</svg>
+<a class="skip" href="#openCatalog">К управлению аквариумом</a>
+<canvas
+  id="ocean"
+  tabindex="0"
+  aria-label="Объёмный аквариум. Выбрать обитателя можно также в списке. Стрелки поворачивают камеру, плюс и минус меняют приближение."
+></canvas>
+<div id="loadScreen" class="load-screen">
+  <div class="loader-ring" aria-hidden="true"></div>
+  <strong>AquaMorph</strong>
+  <p id="loadText">Наполняем аквариум светом…</p>
+  <button id="loadRetry" hidden>Попробовать снова</button>
+</div>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon"
+      ><svg class="icon" aria-hidden="true"><use href="#i-fish" /></svg
+    ></span>
+    <div>
+      <div class="brand-name">aquamorph</div>
+      <div class="brand-sub">Твой маленький подводный мир</div>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button id="openCatalog" class="with-icon">
+      <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg
+      ><span class="button-text">Обитатели</span></button
+    ><button id="openPhoto" class="primary">
+      <svg class="icon" aria-hidden="true"><use href="#i-photo" /></svg
+      ><span class="button-text">Фото в рыбу</span>
+    </button>
+  </div>
+</header>
+<section class="intro" id="intro">
+  <div class="kicker">Немного глубины в твоём дне</div>
+  <h1>Здесь время<br />течёт иначе.</h1>
+  <p>Добавь фото, выбери форму<br />и выпусти свою рыбу в воду.</p>
+  <div class="statusline">
+    <span class="status-dot" aria-hidden="true"></span
+    ><span id="population">Обитатели готовятся</span
+    ><span class="small-separator">/</span><span id="saveState">Демо</span>
+  </div>
+</section>
+<nav class="toolbar" aria-label="Управление сценой">
+  <button id="pause" aria-label="Приостановить аквариум" aria-pressed="false">
+    <svg class="icon" aria-hidden="true"><use href="#i-pause" /></svg
+    ><span class="label-desktop">Пауза</span></button
+  ><button id="feed" aria-label="Покормить обитателей">
+    <svg class="icon" aria-hidden="true"><use href="#i-food" /></svg
+    ><span class="label-desktop">Покормить</span></button
+  ><span class="separator" aria-hidden="true"></span
+  ><button id="openSettings" aria-label="Вода и свет">
+    <svg class="icon" aria-hidden="true"><use href="#i-water" /></svg
+    ><span class="label-desktop">Вода и свет</span></button
+  ><button id="snapshot" aria-label="Снять кадр">
+    <svg class="icon" aria-hidden="true"><use href="#i-camera" /></svg
+    ><span class="label-desktop">Снять кадр</span></button
+  ><span class="separator" aria-hidden="true"></span
+  ><button id="resetCamera" class="icon-button" aria-label="Вернуть обзор">
+    <svg class="icon" aria-hidden="true"><use href="#i-reset" /></svg></button
+  ><button id="hideUI" class="icon-button" aria-label="Скрыть интерфейс">
+    <svg class="icon" aria-hidden="true"><use href="#i-eye" /></svg>
+  </button>
+</nav>
+<div class="corner-actions">
+  <button id="openProject" class="icon-button" aria-label="Проект и сохранение">
+    <svg class="icon" aria-hidden="true"><use href="#i-save" /></svg></button
+  ><button id="fullscreen" class="icon-button" aria-label="На весь экран">
+    <svg class="icon" aria-hidden="true"><use href="#i-full" /></svg></button
+  ><button id="helpButton" class="icon-button" aria-label="Как пользоваться">
+    <svg class="icon" aria-hidden="true"><use href="#i-help" /></svg>
+  </button>
+</div>
+<button id="revealUI" hidden>
+  <svg class="icon" aria-hidden="true"><use href="#i-eye" /></svg>Показать
+  управление
+</button>
+<aside
+  id="selection"
+  class="selected-panel"
+  hidden
+  aria-label="Выбранный обитатель"
+>
+  <div class="row" style="justify-content: space-between">
+    <h2 id="selectedName">Рыба</h2>
+    <button
+      id="closeSelection"
+      class="icon-button"
+      aria-label="Снять выделение"
+    >
+      <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+    </button>
+  </div>
+  <p class="hint" id="selectedType"></p>
+  <div class="row">
+    <button id="followFish" aria-pressed="false">Следить</button
+    ><button id="editFish">Изменить вид</button>
+  </div>
+  <div class="row">
+    <button id="renameFish">Имя</button><button id="duplicateFish">Копия</button
+    ><button id="deleteFish" class="danger">Удалить</button>
+  </div>
+</aside>
+<aside id="drawer" hidden aria-label="Панель управления">
+  <div class="panel-header">
+    <h2 id="drawerTitle">Обитатели</h2>
+    <button id="closeDrawer" class="icon-button" aria-label="Закрыть панель">
+      <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+    </button>
+  </div>
+  <div class="tabs" id="drawerTabs" role="group" aria-label="Разделы"></div>
+  <div class="panel-body" id="drawerBody"></div>
+</aside>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<input
+  id="photoInput"
+  type="file"
+  accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+  hidden
+/><input
+  id="projectInput"
+  type="file"
+  accept=".json,.aquamorph,application/json"
+  hidden
+/>
+<dialog id="editor" aria-labelledby="editorTitle">
+  <div class="panel-header">
+    <h2 id="editorTitle">Создать свою рыбу</h2>
+    <button
+      class="icon-button"
+      id="closeEditor"
+      aria-label="Закрыть редактор"
+      autofocus
+    >
+      <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+    </button>
+  </div>
+  <div class="dialog-body">
+    <div class="editor-grid">
+      <div class="editor-visual">
+        <div class="preview-frame">
+          <canvas
+            id="previewCanvas"
+            aria-label="Объёмный предпросмотр формы рыбы"
+          ></canvas>
+        </div>
+        <div class="preview-rotate">
+          <button id="previewLeft" aria-label="Повернуть предпросмотр влево">
+            Левый бок</button
+          ><button id="previewRight" aria-label="Повернуть предпросмотр вправо">
+            Правый бок
+          </button>
+        </div>
+        <img
+          id="sourcePhoto"
+          class="source-photo"
+          alt="Выбранная локальная фотография"
+          hidden
+        /><button id="replacePhoto" class="file-button">Выбрать фото</button>
+        <p class="hint">
+          Фото становится текстурой объёмного тела. Это не нейросеть и не
+          восстановление анатомии.
+        </p>
+      </div>
+      <div class="editor-options">
+        <label for="speciesName">Имя моего вида</label
+        ><input
+          id="speciesName"
+          type="text"
+          maxlength="50"
+          value="Моя фоторыбка"
+        /><label for="formSelect">Форма обитателя</label
+        ><select id="formSelect"></select>
+        <div class="cols">
+          <div>
+            <label for="speciesColor">Базовая окраска</label
+            ><input
+              id="speciesColor"
+              type="color"
+              value="#82cbd6"
+              style="
+                width: 100%;
+                height: 44px;
+                border: 1px solid var(--line);
+                background: var(--field);
+                border-radius: 8px;
+              "
+            />
+          </div>
+          <div>
+            <label for="speciesCount">Количество</label
+            ><input
+              id="speciesCount"
+              type="number"
+              min="1"
+              max="10"
+              value="1"
+            />
+          </div>
+        </div>
+        <details open>
+          <summary>Фотография на теле</summary>
+          <p class="hint" id="photoHint">
+            Добавь фото или создай вид с обычной окраской.
+          </p>
+          <label for="photoZoom">Масштаб фото</label>
+          <div class="range">
+            <input
+              id="photoZoom"
+              type="range"
+              min=".3"
+              max="3"
+              step=".02"
+              value="1"
+            /><output>1</output>
+          </div>
+          <label for="photoX">Сдвиг по длине</label>
+          <div class="range">
+            <input
+              id="photoX"
+              type="range"
+              min="-1"
+              max="1"
+              step=".01"
+              value="0"
+            /><output>0</output>
+          </div>
+          <label for="photoY">Сдвиг по высоте</label>
+          <div class="range">
+            <input
+              id="photoY"
+              type="range"
+              min="-1"
+              max="1"
+              step=".01"
+              value="0"
+            /><output>0</output>
+          </div>
+          <label for="photoAngle">Поворот фото</label>
+          <div class="range">
+            <input
+              id="photoAngle"
+              type="range"
+              min="-180"
+              max="180"
+              step="1"
+              value="0"
+            /><output>0</output>
+          </div>
+          <label class="check-label"
+            ><input id="photoFlip" type="checkbox" />Отразить фотографию</label
+          ><label for="photoStrength">Видимость фотографии</label>
+          <div class="range">
+            <input
+              id="photoStrength"
+              type="range"
+              min="0"
+              max="1"
+              step=".01"
+              value=".95"
+            /><output>.95</output>
+          </div>
+          <label for="photoSaturation">Насыщенность фото</label>
+          <div class="range">
+            <input
+              id="photoSaturation"
+              type="range"
+              min="0"
+              max="1.5"
+              step=".05"
+              value="1"
+            /><output>1</output>
+          </div>
+          <label for="photoBrightness">Яркость фото</label>
+          <div class="range">
+            <input
+              id="photoBrightness"
+              type="range"
+              min=".5"
+              max="1.8"
+              step=".05"
+              value="1"
+            /><output>1</output>
+          </div>
+          <label class="check-label"
+            ><input id="photoFins" type="checkbox" />Фотография на хвосте и
+            плавниках</label
+          ><label for="backMode">Обратный бок</label
+          ><select id="backMode">
+            <option value="repeat">Повтор фотографии</option>
+            <option value="base">Базовая окраска</option>
+            <option value="mirror">Зеркало фотографии</option></select
+          ><label class="check-label"
+            ><input id="photoScales" type="checkbox" checked />Тонкая чешуя
+            поверх фото</label
+          ><button id="resetCrop">Сбросить кадрирование</button>
+        </details>
+        <details>
+          <summary>Пропорции и движение</summary>
+          <div id="shapeControls"></div>
+          <label for="tailStyle">Форма хвоста у обычных рыб</label
+          ><select id="tailStyle">
+            <option value="default">Как у выбранного профиля</option>
+            <option value="fork">Раздвоенный</option>
+            <option value="round">Округлый</option>
+            <option value="point">Заострённый</option>
+          </select>
+          <p class="hint">
+            Для ската, конька, медузы и черепахи хвост и конечности задаются
+            самой формой.
+          </p>
+          <label for="speciesSpeed">Скорость движения</label>
+          <div class="range">
+            <input
+              id="speciesSpeed"
+              type="range"
+              min=".1"
+              max="1.6"
+              step=".05"
+              value=".7"
+            /><output>.7</output>
+          </div>
+          <label for="speciesDepth">Предпочтительная высота</label>
+          <div class="range">
+            <input
+              id="speciesDepth"
+              type="range"
+              min="-2.8"
+              max="2.8"
+              step=".1"
+              value="0"
+            /><output>0</output>
+          </div>
+          <label class="check-label"
+            ><input id="speciesSchool" type="checkbox" />Держаться стаей с этим
+            видом</label
+          >
+        </details>
+        <label class="check-label" id="updateAllLabel" hidden
+          ><input id="updateAll" type="checkbox" />Изменить весь этот
+          пользовательский вид</label
+        >
+        <p id="editorError" class="error-box" role="alert"></p>
+      </div>
+    </div>
+  </div>
+  <div class="dialog-footer">
+    <span class="hint" id="editorFooter">Обработка фото в браузере</span
+    ><button id="applySpecies" class="primary">Выпустить в воду</button>
+  </div>
+</dialog>
+<dialog id="helpDialog" aria-labelledby="helpTitle">
+  <div class="panel-header">
+    <h2 id="helpTitle">Твой аквариум</h2>
+    <button
+      id="closeHelp"
+      class="icon-button"
+      aria-label="Закрыть справку"
+      autofocus
+    >
+      <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+    </button>
+  </div>
+  <div class="dialog-body">
+    <ol class="guide-list">
+      <li>
+        «Фото в рыбу»: выбери JPG, PNG или WebP, затем форму и кадрирование.
+        Фото ляжет на настоящее объёмное тело.
+      </li>
+      <li>
+        «Обитатели»: добавляй стандартные формы, создавай свои виды и выбирай
+        рыб из списка.
+      </li>
+      <li>
+        Потяни сцену для поворота камеры. Колесо или кнопки в настройках меняют
+        приближение. Касание рыбы выбирает её.
+      </li>
+      <li>
+        «Вода и свет»: настрой волны, материал, глубину цвета и качество. Все
+        вычисления идут на устройстве.
+      </li>
+      <li>
+        «Проект»: сохрани JSON с текстурами или явно сохрани аквариум на
+        устройстве. Без сохранения обновление страницы удалит работу.
+      </li>
+    </ol>
+    <p class="hint">
+      Графические приближения: экранное искажение воды, аналитическая каустика и
+      лучи, проекционные мягкие тени. Это не трассировка лучей и не научная
+      гидродинамика. Пользовательские фото не отправляются на сервер; хостинг
+      получает обычный запрос страницы.
+    </p>
+    <hr class="line" />
+    <p class="hint">
+      Прозрачные формы вдохновлены референсом. Акулы, медузы, черепахи и
+      пресноводные рыбы здесь соседствуют художественно: это не руководство по
+      реальному содержанию животных.
+    </p>
+    <p class="hint">
+      На физическом iPhone или Samsung приложение нужно проверить отдельно.
+      Уменьши качество при нагреве или рывках. Кнопка паузы останавливает всю
+      симуляцию.
+    </p>
+  </div>
+</dialog>
+<dialog id="snapshotDialog" aria-labelledby="snapshotTitle">
+  <div class="panel-header">
+    <h2 id="snapshotTitle">Кадр твоего аквариума</h2>
+    <button
+      id="closeSnapshot"
+      class="icon-button"
+      aria-label="Закрыть снимок"
+      autofocus
+    >
+      <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+    </button>
+  </div>
+  <div class="dialog-body">
+    <img
+      id="snapshotImage"
+      alt="Экспортированный кадр текущей трёхмерной сцены"
+    />
+    <div class="row">
+      <a id="snapshotDownload" class="download-link" download="aquamorph.png"
+        >Скачать PNG</a
+      ><a id="snapshotOpen" class="download-link" target="_blank" rel="noopener"
+        >Открыть картинку</a
+      >
+    </div>
+    <p class="hint">
+      На iPhone открой картинку и удерживай её, чтобы сохранить в Фото, либо
+      используй меню «Поделиться» браузера.
+    </p>
+  </div>
+</dialog>
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+  <div class="panel-header">
+    <h2 id="confirmTitle">Подтвердить действие</h2>
+    <button id="confirmClose" class="icon-button" aria-label="Отмена" autofocus>
+      <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+    </button>
+  </div>
+  <div class="dialog-body">
+    <p id="confirmMessage"></p>
+    <input
+      id="confirmInput"
+      type="text"
+      maxlength="80"
+      hidden
+      aria-label="Новое имя"
+    />
+    <p id="confirmError" class="error-box" role="alert"></p>
+  </div>
+  <div class="dialog-footer">
+    <button id="confirmCancel">Отмена</button
+    ><button id="confirmOK" class="primary">Продолжить</button>
+  </div>
+</dialog>
+<script>
+"use strict";
+// AquaMorph / vectors, matrices, deterministic geometry. All units are scene units.
+const TAU = Math.PI * 2,
+  clamp = (v, a, b) => Math.max(a, Math.min(b, v)),
+  mix = (a, b, t) => a + (b - a) * t;
+const V = {
+  add: (a, b) => a.map((v, i) => v + b[i]),
+  sub: (a, b) => a.map((v, i) => v - b[i]),
+  mul: (a, s) => a.map((v) => v * s),
+  dot: (a, b) => a.reduce((s, v, i) => s + v * b[i], 0),
+  cross: (a, b) => [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ],
+  len: (a) => Math.hypot(...a),
+  norm: (a) => {
+    const n = Math.hypot(...a) || 1;
+    return a.map((v) => v / n);
+  },
+};
+function identity() {
+  return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+}
+function perspective(fov, aspect, near, far) {
+  const f = 1 / Math.tan(fov / 2),
+    nf = 1 / (near - far);
+  return new Float32Array([
+    f / aspect,
+    0,
+    0,
+    0,
+    0,
+    f,
+    0,
+    0,
+    0,
+    0,
+    (far + near) * nf,
+    -1,
+    0,
+    0,
+    2 * far * near * nf,
+    0,
+  ]);
+}
+function lookAt(eye, target) {
+  const z = V.norm(V.sub(eye, target)),
+    x = V.norm(V.cross([0, 1, 0], z)),
+    y = V.cross(z, x);
+  return new Float32Array([
+    x[0],
+    y[0],
+    z[0],
+    0,
+    x[1],
+    y[1],
+    z[1],
+    0,
+    x[2],
+    y[2],
+    z[2],
+    0,
+    -V.dot(x, eye),
+    -V.dot(y, eye),
+    -V.dot(z, eye),
+    1,
+  ]);
+}
+function mm(a, b) {
+  const r = new Float32Array(16);
+  for (let j = 0; j < 4; j++)
+    for (let i = 0; i < 4; i++)
+      for (let k = 0; k < 4; k++) r[j * 4 + i] += a[k * 4 + i] * b[j * 4 + k];
+  return r;
+}
+function project(m, p) {
+  const a = [...p, 1],
+    r = [0, 0, 0, 0];
+  for (let i = 0; i < 4; i++)
+    for (let j = 0; j < 4; j++) r[i] += m[j * 4 + i] * a[j];
+  return [r[0] / r[3], r[1] / r[3], r[2] / r[3], r[3]];
+}
+function model(pos, forward = [1, 0, 0], scale = 1) {
+  const f = V.norm(forward),
+    s = V.norm(V.cross(f, [0, 1, 0])),
+    u = V.norm(V.cross(s, f));
+  return new Float32Array([
+    f[0] * scale,
+    f[1] * scale,
+    f[2] * scale,
+    0,
+    u[0] * scale,
+    u[1] * scale,
+    u[2] * scale,
+    0,
+    s[0] * scale,
+    s[1] * scale,
+    s[2] * scale,
+    0,
+    ...pos,
+    1,
+  ]);
+}
+function scaled(pos, s) {
+  return new Float32Array([
+    s[0],
+    0,
+    0,
+    0,
+    0,
+    s[1],
+    0,
+    0,
+    0,
+    0,
+    s[2],
+    0,
+    ...pos,
+    1,
+  ]);
+}
+function seeded(seed) {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+let uidCounter = 0;
+const uid = () =>
+  globalThis.crypto?.randomUUID?.() ||
+  "aq-" + Date.now().toString(36) + "-" + ++uidCounter;
+function rgb(hex) {
+  return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+}
+const FORMS = [
+  {
+    id: "tetra",
+    name: "Стайная рыбка",
+    group: "fish",
+    length: 1.7,
+    height: 0.5,
+    thick: 0.35,
+    tail: 0.48,
+    dorsal: 0.24,
+    speed: 1.05,
+    color: "#73c7dd",
+    school: true,
+  },
+  {
+    id: "gold",
+    name: "Золотая рыбка",
+    group: "fish",
+    length: 1.6,
+    height: 0.8,
+    thick: 0.6,
+    tail: 0.72,
+    dorsal: 0.35,
+    speed: 0.58,
+    color: "#e9b36a",
+    school: false,
+  },
+  {
+    id: "angel",
+    name: "Скалярия",
+    group: "fish",
+    length: 1.35,
+    height: 1.15,
+    thick: 0.28,
+    tail: 0.42,
+    dorsal: 0.7,
+    speed: 0.48,
+    color: "#c8d5d9",
+    school: true,
+  },
+  {
+    id: "discus",
+    name: "Дискус",
+    group: "fish",
+    length: 1.2,
+    height: 1.08,
+    thick: 0.28,
+    tail: 0.25,
+    dorsal: 0.35,
+    speed: 0.48,
+    color: "#83c3c8",
+    school: true,
+  },
+  {
+    id: "betta",
+    name: "Длинноплавничная",
+    group: "fish",
+    length: 1.35,
+    height: 0.63,
+    thick: 0.36,
+    tail: 0.95,
+    dorsal: 0.48,
+    speed: 0.5,
+    color: "#9eafd8",
+    school: false,
+  },
+  {
+    id: "shark",
+    name: "Акула / форма",
+    group: "fish",
+    length: 2.8,
+    height: 0.65,
+    thick: 0.6,
+    tail: 0.67,
+    dorsal: 0.66,
+    speed: 0.85,
+    color: "#91aebb",
+    school: false,
+  },
+  {
+    id: "ray",
+    name: "Скат / форма",
+    group: "fish",
+    length: 1.9,
+    height: 0.27,
+    thick: 2.45,
+    tail: 1.4,
+    dorsal: 0.05,
+    speed: 0.58,
+    color: "#93b8ca",
+    school: false,
+  },
+  {
+    id: "horse",
+    name: "Морской конёк",
+    group: "fish",
+    length: 0.8,
+    height: 1.75,
+    thick: 0.25,
+    tail: 0.5,
+    dorsal: 0.17,
+    speed: 0.23,
+    color: "#e0c99c",
+    school: false,
+  },
+  {
+    id: "jelly",
+    name: "Медуза",
+    group: "other",
+    length: 1,
+    height: 1,
+    thick: 1,
+    tail: 1,
+    dorsal: 0,
+    speed: 0.24,
+    color: "#b6dbe9",
+    school: false,
+  },
+  {
+    id: "turtle",
+    name: "Морская черепаха",
+    group: "other",
+    length: 1.65,
+    height: 0.55,
+    thick: 1.15,
+    tail: 0.2,
+    dorsal: 0,
+    speed: 0.35,
+    color: "#a1bb9d",
+    school: false,
+  },
+  {
+    id: "dolphin",
+    name: "Дельфин / млекопитающее",
+    group: "other",
+    length: 2.6,
+    height: 0.6,
+    thick: 0.6,
+    tail: 0.6,
+    dorsal: 0.4,
+    speed: 0.8,
+    color: "#9cb7c9",
+    school: false,
+  },
+];
+const FORM_MAP = Object.fromEntries(FORMS.map((f) => [f.id, f]));
+class Geometry {
+  constructor() {
+    this.a = [];
+  }
+  vertex(p, n, uv = [0, 0], part = 0, flex = 0) {
+    this.a.push(...p, ...n, ...uv, part, flex);
+  }
+  tri(a, b, c, part = 0, flex = 0, uv = null) {
+    const n = V.norm(V.cross(V.sub(b, a), V.sub(c, a)));
+    for (const [i, p] of [a, b, c].entries())
+      this.vertex(p, n, uv?.[i] || [0.5, 0.5], part, flex);
+  }
+  quad(
+    a,
+    b,
+    c,
+    d,
+    part = 0,
+    flex = 0,
+    uv = [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [0, 1],
+    ],
+  ) {
+    this.tri(a, b, c, part, flex, [uv[0], uv[1], uv[2]]);
+    this.tri(a, c, d, part, flex, [uv[0], uv[2], uv[3]]);
+  }
+  ellipsoid(center, radii, part = 0, rows = 14, cols = 24, uvSide = true) {
+    for (let i = 0; i < rows; i++)
+      for (let j = 0; j < cols; j++) {
+        const fn = (u, v) => {
+          const th = u * Math.PI,
+            ph = v * TAU,
+            n = [
+              Math.cos(th),
+              Math.sin(th) * Math.cos(ph),
+              Math.sin(th) * Math.sin(ph),
+            ];
+          return {
+            p: n.map((x, k) => center[k] + x * radii[k]),
+            n: V.norm(n.map((x, k) => x / radii[k])),
+            uv: uvSide ? [(1 + n[0]) / 2, (1 + n[1]) / 2] : [v, u],
+          };
+        };
+        const pts = [
+          fn(i / rows, j / cols),
+          fn((i + 1) / rows, j / cols),
+          fn((i + 1) / rows, (j + 1) / cols),
+          fn(i / rows, (j + 1) / cols),
+        ];
+        for (const k of [0, 1, 2, 0, 2, 3])
+          this.vertex(pts[k].p, pts[k].n, pts[k].uv, part, 0);
+      }
+  }
+  tube(points, radii, part = 0, cols = 8) {
+    for (let i = 0; i < points.length - 1; i++) {
+      const tangent = V.norm(
+        V.sub(
+          points[Math.min(points.length - 1, i + 1)],
+          points[Math.max(0, i - 1)],
+        ),
+      );
+      let side = V.norm(V.cross(tangent, [0, 0, 1]));
+      if (V.len(side) < 0.1) side = [1, 0, 0];
+      const up = V.cross(side, tangent);
+      const point = (row, t) => {
+        const n = V.add(V.mul(side, Math.cos(t)), V.mul(up, Math.sin(t)));
+        return {
+          p: V.add(points[row], V.mul(n, radii[row])),
+          n,
+          uv: [row / (points.length - 1), t / TAU],
+        };
+      };
+      for (let j = 0; j < cols; j++) {
+        const a = point(i, (j / cols) * TAU),
+          b = point(i + 1, (j / cols) * TAU),
+          c = point(i + 1, ((j + 1) / cols) * TAU),
+          d = point(i, ((j + 1) / cols) * TAU);
+        for (const p of [a, b, c, a, c, d])
+          this.vertex(p.p, p.n, p.uv, part, i / points.length);
+      }
+    }
+  }
+  fan(root, edge, part = 1, flex = 1) {
+    for (let i = 0; i < edge.length - 1; i++)
+      this.tri(root, edge[i], edge[i + 1], part, flex);
+  }
+  build() {
+    const a = this.a;
+    for (let i = 0; i < a.length; i += 30) {
+      const p = a.slice(i, i + 3),
+        q = a.slice(i + 10, i + 13),
+        r = a.slice(i + 20, i + 23),
+        cross = V.cross(V.sub(q, p), V.sub(r, p)),
+        n = V.add(
+          V.add(a.slice(i + 3, i + 6), a.slice(i + 13, i + 16)),
+          a.slice(i + 23, i + 26),
+        );
+      if (V.dot(cross, n) < 0) {
+        const b = a.slice(i + 10, i + 20);
+        a.splice(i + 10, 10, ...a.slice(i + 20, i + 30));
+        a.splice(i + 20, 10, ...b);
+      }
+    }
+    return new Float32Array(a);
+  }
+}
+function fishGeometry(form, lod = 1, shape = {}) {
+  const f = {
+    ...form,
+    length: form.length * (shape.length || 1),
+    height: form.height * (shape.height || 1),
+    thick: form.thick * (shape.thick || 1),
+    tail: form.tail * (shape.tail || 1),
+  };
+  const g = new Geometry(),
+    rows = lod === 0 ? 10 : 20,
+    cols = lod === 0 ? 12 : 28,
+    L = f.length,
+    H = f.height,
+    Z = f.thick;
+  const finish = () => {
+    const a = g.build(),
+      special = ["horse", "ray", "turtle", "jelly"].includes(f.id);
+    if (special)
+      for (let i = 0; i < a.length; i += 10) {
+        a[i] *= shape.length || 1;
+        a[i + 1] *= shape.height || 1;
+        a[i + 2] *= shape.thick || 1;
+        if (a[i + 8] === 0 || a[i + 8] === 4) {
+          a[i + 6] = clamp(a[i] / Math.max(L, 1) + 0.5, 0, 1);
+          a[i + 7] = clamp(
+            (f.id === "ray"
+              ? a[i + 2] / Math.max(Z, 1)
+              : a[i + 1] / Math.max(H, 1)) + 0.5,
+            0,
+            1,
+          );
+        }
+      }
+    return a;
+  };
+  const eye = (x, y, z, r = 0.045) => {
+    g.ellipsoid([x, y, z], [r, r * 0.95, r * 0.65], 2, 6, 10);
+    g.ellipsoid(
+      [x + r * 0.12, y, z + Math.sign(z) * r * 0.55],
+      [r * 0.48, r * 0.53, r * 0.3],
+      3,
+      5,
+      8,
+    );
+  };
+  if (f.id === "jelly") {
+    const n = lod === 0 ? 12 : 28;
+    for (let i = 0; i < 10; i++)
+      for (let j = 0; j < n; j++) {
+        const fn = (u, v) => {
+          const a = u * Math.PI * 0.58,
+            p = v * TAU;
+          return [
+            Math.sin(a) * 0.57,
+            Math.cos(a) * 0.46,
+            Math.sin(a) * Math.cos(p) * 0.57,
+          ];
+        };
+        const p = (u, v) => {
+          const a = u * Math.PI * 0.58,
+            t = v * TAU;
+          return [
+            Math.sin(a) * Math.cos(t) * 0.62,
+            Math.cos(a) * 0.5,
+            Math.sin(a) * Math.sin(t) * 0.62,
+          ];
+        };
+        g.quad(
+          p(i / 10, j / n),
+          p((i + 1) / 10, j / n),
+          p((i + 1) / 10, (j + 1) / n),
+          p(i / 10, (j + 1) / n),
+          4,
+          1,
+        );
+      }
+    for (let k = 0; k < 10; k++) {
+      const a = (k / 10) * TAU,
+        pts = [];
+      for (let i = 0; i < 16; i++)
+        pts.push([
+          Math.cos(a) * (0.35 + 0.04 * Math.sin(i)),
+          0.03 - i * 0.095,
+          Math.sin(a) * (0.35 + 0.04 * Math.cos(i)),
+        ]);
+      g.tube(
+        pts,
+        pts.map((_, i) => 0.016 * (1 - i / 20)),
+        1,
+        5,
+      );
+    }
+    return finish();
+  }
+  if (f.id === "horse") {
+    const pts = [
+      [0.05, -0.75, 0],
+      [-0.2, -0.65, 0],
+      [-0.25, -0.42, 0],
+      [-0.2, -0.15, 0],
+      [-0.15, 0.15, 0],
+      [-0.25, 0.42, 0],
+      [-0.23, 0.68, 0],
+      [0.0, 0.77, 0],
+      [0.19, 0.69, 0],
+      [0.32, 0.65, 0],
+    ];
+    g.tube(
+      pts,
+      [0.025, 0.035, 0.045, 0.12, 0.16, 0.13, 0.12, 0.15, 0.08, 0.06],
+      0,
+      cols,
+    );
+    const curl = [];
+    for (let i = 0; i < 20; i++) {
+      const t = (i / 19) * TAU * 1.1;
+      curl.push([
+        0.02 + 0.15 * Math.sin(t) * (1 - i / 24),
+        -0.75 + 0.15 * (1 - Math.cos(t)),
+        0,
+      ]);
+    }
+    g.tube(
+      curl,
+      curl.map((_, i) => 0.025 * (1 - i / 27)),
+      0,
+      6,
+    );
+    g.fan(
+      [-0.23, 0.24, 0],
+      [
+        [-0.45, 0.32, 0],
+        [-0.42, 0.12, 0],
+        [-0.25, 0.04, 0],
+      ],
+      1,
+      0.9,
+    );
+    eye(0.03, 0.76, 0.115, 0.035);
+    eye(0.03, 0.76, -0.115, 0.035);
+    return finish();
+  }
+  if (f.id === "ray") {
+    g.ellipsoid([0.12, 0.015, 0], [0.8, 0.14, 0.42], 0, rows, cols);
+    for (const side of [-1, 1])
+      for (let i = 0; i < 10; i++)
+        for (let j = 0; j < 10; j++) {
+          const p = (u, v) => {
+            const rootx = mix(-0.6, 0.65, u),
+              edgeX = mix(-1.05, 0.05, u);
+            return [
+              mix(rootx, edgeX, v),
+              0.055 * Math.sin(u * Math.PI) - 0.08 * v * v,
+              side * (0.19 + Math.sin(u * Math.PI) * 1.25 * v),
+            ];
+          };
+          g.quad(
+            p(i / 10, j / 10),
+            p((i + 1) / 10, j / 10),
+            p((i + 1) / 10, (j + 1) / 10),
+            p(i / 10, (j + 1) / 10),
+            0,
+            j / 10,
+          );
+        }
+    const tail = [];
+    for (let i = 0; i < 18; i++)
+      tail.push([-0.5 - i * 0.09, 0.02, Math.sin(i * 0.2) * 0.025]);
+    g.tube(
+      tail,
+      tail.map((_, i) => 0.04 * (1 - i / 20)),
+      0,
+      6,
+    );
+    eye(0.53, 0.14, 0.16, 0.04);
+    eye(0.53, 0.14, -0.16, 0.04);
+    return finish();
+  }
+  if (f.id === "turtle") {
+    g.ellipsoid([-0.05, 0, 0], [0.72, 0.32, 0.52], 4, rows, cols);
+    g.ellipsoid([0.68, 0.0, 0], [0.26, 0.16, 0.15], 0, 10, 16);
+    for (const side of [-1, 1]) {
+      g.fan(
+        [0.35, 0, side * 0.35],
+        [
+          [0.55, -0.13, side * 0.6],
+          [0.03, -0.15, side * 1.0],
+          [-0.1, 0, side * 0.55],
+        ],
+        1,
+        side,
+      );
+      g.fan(
+        [-0.45, -0.05, side * 0.32],
+        [
+          [-0.3, -0.1, side * 0.65],
+          [-0.7, -0.06, side * 0.76],
+          [-0.72, 0, side * 0.35],
+        ],
+        1,
+        side,
+      );
+    }
+    g.fan(
+      [-0.65, -0.05, 0],
+      [
+        [-0.94, -0.12, 0],
+        [-0.75, 0.04, 0.06],
+      ],
+      0,
+      0.4,
+    );
+    eye(0.8, 0.1, 0.115, 0.035);
+    eye(0.8, 0.1, -0.115, 0.035);
+    return finish();
+  }
+  // A longitudinal cross-section body: narrowed peduncle, full shoulders, tapered head.
+  const profile = (t) =>
+    Math.pow(Math.max(0, Math.sin(Math.PI * t)), 0.7) * (0.72 + 0.45 * t) +
+    0.015;
+  const fn = (u, v) => {
+    const x = mix(-L * 0.48, L * 0.5, u),
+      a = v * TAU,
+      r = profile(u),
+      d =
+        (profile(Math.min(0.999, u + 0.002)) -
+          profile(Math.max(0.001, u - 0.002))) /
+        0.004;
+    const ry = H * 0.5,
+      rz = Z * 0.5;
+    return {
+      p: [x, Math.cos(a) * r * ry, Math.sin(a) * r * rz],
+      n: V.norm([-d / L, Math.cos(a) / ry, Math.sin(a) / rz]),
+      uv: [u, (Math.cos(a) + 1) / 2],
+    };
+  };
+  for (let i = 0; i < rows; i++)
+    for (let j = 0; j < cols; j++) {
+      const ps = [
+        fn(i / rows, j / cols),
+        fn((i + 1) / rows, j / cols),
+        fn((i + 1) / rows, (j + 1) / cols),
+        fn(i / rows, (j + 1) / cols),
+      ];
+      for (const k of [0, 1, 2, 0, 2, 3])
+        g.vertex(ps[k].p, ps[k].n, ps[k].uv, 0, 0);
+    }
+  const t = -L * 0.47,
+    extent = f.tail,
+    fan = [];
+  for (let i = 0; i <= 18; i++) {
+    const a = -Math.PI * 0.5 + (i / 18) * Math.PI,
+      spread = Math.sin(a),
+      fork =
+        f.id === "gold" || f.id === "betta"
+          ? 0.04
+          : Math.pow(Math.abs(spread), 0.8) * 0.18;
+    const tailProfile =
+      shape.tailStyle === "fork"
+        ? 0.52 + Math.abs(spread) * 0.55
+        : shape.tailStyle === "round"
+          ? 0.72 + 0.28 * Math.cos(a)
+          : shape.tailStyle === "point"
+            ? 1.1 - 0.6 * Math.abs(spread)
+            : 0.7 + 0.3 * Math.cos(a) + fork;
+    fan.push([t - extent * tailProfile, spread * extent * 0.65, 0]);
+  }
+  if (f.id === "dolphin") {
+    g.fan(
+      [t, 0, 0],
+      fan.map((p) => [p[0], p[2], p[1]]),
+      1,
+      1,
+    );
+    g.ellipsoid([L * 0.48, -0.07, 0], [0.28, 0.07, 0.09], 0, 8, 12);
+  } else g.fan([t, 0, 0], fan, 1, 1);
+  const dh = f.dorsal * (shape.dorsal || 1),
+    top = [];
+  for (let i = 0; i <= 12; i++) {
+    const u = i / 12,
+      x = mix(-L * 0.27, L * 0.21, u);
+    top.push([x, H * 0.37 + Math.sin(Math.PI * u) * dh, 0]);
+  }
+  g.fan([-0.1, H * 0.2, 0], top, 1, 0.5);
+  const bottom = [];
+  for (let i = 0; i <= 10; i++) {
+    const u = i / 10;
+    bottom.push([
+      mix(-L * 0.32, L * 0.05, u),
+      -H * 0.32 - Math.sin(Math.PI * u) * (f.id === "angel" ? 0.65 : dh * 0.5),
+      0,
+    ]);
+  }
+  g.fan([-0.12, -H * 0.2, 0], bottom, 1, 0.8);
+  for (const side of [-1, 1]) {
+    const root = [L * 0.18, -H * 0.05, side * Z * 0.39];
+    g.fan(
+      root,
+      [
+        [L * 0.07, -H * 0.17, side * (Z * 0.5 + 0.12)],
+        [-L * 0.15, -H * 0.29, side * (Z * 0.5 + 0.32)],
+        [-L * 0.1, -H * 0.04, side * Z * 0.45],
+      ],
+      1,
+      side,
+    );
+    if (f.id === "angel") {
+      const pts = [];
+      for (let i = 0; i < 8; i++)
+        pts.push([L * 0.12 - i * 0.018, -H * 0.2 - i * 0.095, side * Z * 0.3]);
+      g.tube(
+        pts,
+        pts.map((_, i) => 0.012 * (1 - i / 10)),
+        1,
+        5,
+      );
+    }
+  }
+  const ex = L * 0.33,
+    ey = H * 0.15,
+    ez = Z * 0.35;
+  eye(ex, ey, ez, clamp(H * 0.07, 0.026, 0.05));
+  eye(ex, ey, -ez, clamp(H * 0.07, 0.026, 0.05));
+  // Dark, small mouth seam; no cartoon facial features.
+  g.ellipsoid([L * 0.49, -H * 0.035, 0], [0.008, H * 0.035, Z * 0.12], 3, 5, 8);
+  return finish();
+}
+function planeGeometry(axis, sizeA, sizeB, stepsA = 1, stepsB = 1) {
+  const g = new Geometry();
+  const p = (a, b) =>
+    axis === "xz"
+      ? [a * sizeA, 0, b * sizeB]
+      : axis === "xy"
+        ? [a * sizeA, b * sizeB, 0]
+        : [0, a * sizeA, b * sizeB];
+  for (let i = 0; i < stepsA; i++)
+    for (let j = 0; j < stepsB; j++) {
+      const a = i / stepsA - 0.5,
+        A = (i + 1) / stepsA - 0.5,
+        b = j / stepsB - 0.5,
+        B = (j + 1) / stepsB - 0.5;
+      g.quad(p(a, b), p(A, b), p(A, B), p(a, B), 0, 0, [
+        [a + 0.5, b + 0.5],
+        [A + 0.5, b + 0.5],
+        [A + 0.5, B + 0.5],
+        [a + 0.5, B + 0.5],
+      ]);
+    }
+  return g.build();
+}
+function rockGeometry(seed) {
+  const g = new Geometry(),
+    r = seeded(seed);
+  g.ellipsoid([0, 0, 0], [1, 0.7, 0.8], 0, 10, 16, false);
+  for (let i = 0; i < g.a.length; i += 10) {
+    const x = g.a[i],
+      y = g.a[i + 1],
+      z = g.a[i + 2],
+      n = 1 + 0.1 * Math.sin(x * 13 + y * 9 + seed) * Math.cos(z * 11 + seed);
+    g.a[i] *= n;
+    g.a[i + 1] *= n;
+    g.a[i + 2] *= n;
+  }
+  return g.build();
+}
+function plantGeometry(seed) {
+  const g = new Geometry(),
+    r = seeded(seed);
+  for (let k = 0; k < 7; k++) {
+    const a = r() * TAU,
+      h = 0.7 + r() * 1.5,
+      w = 0.05 + r() * 0.08,
+      bx = (r() - 0.5) * 0.25,
+      bz = (r() - 0.5) * 0.25;
+    for (let i = 0; i < 12; i++) {
+      const p = (t, s) => [
+        bx +
+          Math.cos(a) * Math.sin(t * 2) * t * 0.4 +
+          s * w * Math.sin(t * Math.PI),
+        h * t,
+        bz + Math.sin(a) * Math.sin(t * 2) * t * 0.4,
+      ];
+      g.quad(
+        p(i / 12, -1),
+        p((i + 1) / 12, -1),
+        p((i + 1) / 12, 1),
+        p(i / 12, 1),
+        0,
+        i / 12,
+      );
+    }
+  }
+  return g.build();
+}
+
+
+// AquaMorph / embedded GLSL and WebGL2 renderer. Screen refraction is an approximation.
+const VERT = `#version 300 es
+precision highp float;
+precision highp int;
+layout(location=0) in vec3 aPosition;
+layout(location=1) in vec3 aNormal;
+layout(location=2) in vec2 aUV;
+layout(location=3) in vec2 aTag;
+uniform mat4 uModel,uVP;
+uniform float uTime,uWaterTime,uPhase,uSpeed,uWave,uKind;
+uniform int uMode;
+out vec3 vWorld,vNormal,vLocal;
+out vec2 vUV;
+out float vPart;
+void main(){
+ vec3 p=aPosition,n=aNormal;float t=uTime;
+ if(uMode==0){
+  float w=pow(clamp((-p.x+.3)/1.8,0.,1.),1.6);
+  float phase=t*(3.4+uSpeed*2.)+p.x*4.2+uPhase;
+  if(uKind==6.){p.y+=sin(t*2.+abs(p.z)*3.+uPhase)*pow(abs(p.z),1.5)*.13;}
+  else if(uKind==8.){float pulse=sin(t*2.+uPhase);p.xz*=1.+pulse*.09;p.y+=sin(t*2.+p.y*4.+uPhase)*max(0.,-p.y)*.07;}
+  else if(uKind==9.){if(aTag.x==1.)p.y+=sin(t*2.+uPhase+p.x*2.)*abs(p.z)*.12;}
+  else if(uKind==7.){p.z+=sin(t*2.+p.y*5.+uPhase)*.012;}
+  else {float wave=sin(phase)*w*.16;n.x+=cos(phase)*w*.3;if(uKind==10.)p.y+=wave;else p.z+=wave;p.z+=sin(t*6.+uPhase+p.x*5.)*aTag.y*.018;}
+ }
+ if(uMode==2){t=uWaterTime;float a=p.x*.85+t*.55,b=p.z*1.3+t*.4,c=p.x*2.1+p.z*1.5-t*.7;p.y+=uWave*(sin(a)*.04+cos(b)*.04+sin(c)*.018);n=normalize(vec3(-uWave*(cos(a)*.034+cos(c)*.0378),1.,uWave*(sin(b)*.052-cos(c)*.027)));}
+ if(uMode==6){t=uWaterTime;p.x+=sin(t*.55+p.y*1.8+uPhase)*p.y*p.y*.055*uWave;p.z+=cos(t*.37+p.y*2.+uPhase)*p.y*.045*uWave;}
+ vec4 world=uModel*vec4(p,1.);vWorld=world.xyz;vNormal=normalize(mat3(uModel)*n);vUV=aUV;vLocal=aPosition;vPart=aTag.x;gl_Position=uVP*world;
+}`;
+const FRAG = `#version 300 es
+precision highp float;
+precision highp int;
+in vec3 vWorld,vNormal,vLocal;in vec2 vUV;in float vPart;
+uniform vec3 uColor,uEye,uLight;
+uniform float uTime,uWaterTime,uOpacity,uPhotoStrength,uExposure,uClear,uCaustics,uCrystal,uSelected,uDepth,uScalePattern;
+uniform int uMode,uHasPhoto,uBackMode;
+uniform sampler2D uPhoto;
+uniform vec4 uCrop;
+uniform float uPhotoAngle,uPhotoFlip,uPhotoFins,uSaturation,uBrightness;
+uniform vec2 uPhotoSpan;
+out vec4 fragColor;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+float caustic(vec2 p){p*=1.7;p+=vec2(sin(p.y*1.6+uWaterTime*.22),cos(p.x*1.5-uWaterTime*.19))*.62;p+=vec2(sin(p.y*3.+p.x+uWaterTime*.13),cos(p.x*2.7-p.y-uWaterTime*.15))*.16;vec2 cell=floor(p),f=fract(p);float d1=9.,d2=9.;for(int j=-1;j<=1;j++)for(int i=-1;i<=1;i++){vec2 g=vec2(float(i),float(j)),o=vec2(hash(cell+g),hash(cell+g+vec2(13,7)));o=.5+.36*sin(uWaterTime*.34+o*6.283);float d=length(g+o-f);if(d<d1){d2=d1;d1=d;}else d2=min(d2,d);}return pow(1.-smoothstep(.015,.16,d2-d1),2.);}
+void main(){
+ vec3 n=normalize(vNormal);if(dot(n,uEye-vWorld)<0.)n=-n;
+ vec3 view=normalize(uEye-vWorld),light=normalize(uLight);float ndl=max(0.,dot(n,light)),fres=pow(1.-max(0.,dot(n,view)),3.);
+ vec3 base=uColor;float alpha=uOpacity,spec=0.;float c=0.;
+ if(uMode==0){
+  float part=floor(vPart+.5);if(part!=1.&&!gl_FrontFacing)discard;vec3 localN=normalize(vLocal);
+  if(part==2.){base=vec3(.55,.67,.69);}else if(part==3.){base=vec3(.012,.025,.031);}
+  else{
+   float scales=sin(vUV.x*180.+sin(vUV.y*120.)*.7)*sin(vUV.y*120.);
+   base*=1.+scales*.055*uScalePattern;
+   float stripe=sin(vUV.x*28.)*.5+.5;base*=.86+.14*stripe;
+   if(part==1.){base=mix(base,vec3(.63,.8,.84),.25);alpha*=.75;}
+   if(uHasPhoto==1&&(part==0.||part==4.||(part==1.&&uPhotoFins>.5))){
+    vec2 uv=vUV-.5;float co=cos(uPhotoAngle),si=sin(uPhotoAngle);uv=mat2(co,-si,si,co)*uv;if(uPhotoFlip>.5)uv.x=-uv.x;if(vLocal.z<0.&&uBackMode==2)uv.x=-uv.x;uv=uv*uPhotoSpan/uCrop.zw+vec2(.5)+uCrop.xy;
+    bool inside=all(greaterThanEqual(uv,vec2(0.)))&&all(lessThanEqual(uv,vec2(1.)));
+    bool back=vLocal.z<0.;if(inside&&!(back&&uBackMode==1)){vec4 samplePhoto=texture(uPhoto,vec2(uv.x,1.-uv.y));vec3 tex=samplePhoto.rgb;tex=pow(tex,vec3(2.2));tex=mix(vec3(dot(tex,vec3(.2126,.7152,.0722))),tex,uSaturation)*uBrightness;float border=min(min(uv.x,1.-uv.x),min(uv.y,1.-uv.y));base=mix(base,tex,uPhotoStrength*samplePhoto.a*smoothstep(0.,.035,border));}
+   }
+  }
+  spec=pow(max(0.,dot(n,normalize(light+view))),50.)*.75;
+  if(uCrystal>.5&&uHasPhoto==0&&part!=3.){base=mix(base,vec3(.012,.10,.22),.85);base+=vec3(.07,.38,.66)*fres*1.7;alpha*=.28+.62*fres;spec*=2.2;}
+  if(uSelected>.5)base+=vec3(.07,.15,.18)*fres;
+  c=caustic(vWorld.xz+vWorld.yy*.3)*uCaustics*.32;
+ }
+ else if(uMode==1){
+  float grain=noise(vWorld.xz*75.)*.15+noise(vWorld.xz*4.)*.13;float ripple=sin(vWorld.x*19.+sin(vWorld.z*2.)*2.);base*=.72+grain+ripple*.025;
+  c=caustic(vWorld.xz)*uCaustics*.95;
+ }
+ else if(uMode==2){float ripple=pow(max(0.,sin(vWorld.x*5.+vWorld.z*7.+sin(vWorld.z*3.-uTime)*.4)),12.);base=vec3(.005,.055,.13)+vec3(.035,.21,.42)*fres;spec=pow(max(0.,dot(n,normalize(light+view))),110.)*3.+ripple*.07;c=caustic(vWorld.xz*1.5)*uCaustics*.8;alpha=.78;}
+ else if(uMode==3){base*=.32+noise(vWorld.xy*.6)*.15;c=caustic(vec2(vWorld.x+vWorld.z*.6,vWorld.y)*.8)*uCaustics*.008;}
+ else if(uMode==4){base=vec3(.045,.29,.39)+fres*vec3(.17,.4,.5);spec=pow(max(0.,dot(n,normalize(light+view))),150.)*.8;alpha*=.12+fres*.4;}
+ else if(uMode==5){base*=.64+noise(vWorld.xz*5.+vWorld.y*3.)*.5;c=caustic(vWorld.xz)*uCaustics*.35;}
+ else if(uMode==6){base*=.8+sin(vUV.y*50.)*.07;spec=pow(max(0.,dot(n,normalize(light+view))),30.)*.18;c=caustic(vWorld.xz)*uCaustics*.08;}
+ else if(uMode==7){base=vec3(.12,.39,.48)+vec3(.4,.7,.8)*fres;alpha=.07+fres*.3;spec=pow(max(0.,dot(n,normalize(light+view))),80.)*1.7;}
+ else if(uMode==8){base=uColor;alpha=1.;}
+ else if(uMode==9){fragColor=vec4(0.,.025,.035,uOpacity);return;}
+ vec3 lit=base*(.27+ndl*.8)+vec3(.16,.56,.92)*(spec+c);
+ float dist=length(uEye-vWorld);float fog=(1.-exp(-dist*(.017+.055*(1.-uClear))))*.55;
+ fog+=clamp((-vWorld.z+2.)/14.,0.,.36)*(1.-uClear*.6);
+ lit=mix(lit,vec3(.001,.018,.052)*uDepth,clamp(fog,0.,.82));
+ if(uMode==2)lit+=vec3(.015,.09,.22)*fres;
+ fragColor=vec4(max(lit,vec3(0.)),alpha);
+}`;
+const POSTVERT = `#version 300 es
+precision highp float;
+precision highp int;
+const vec2 p[3]=vec2[3](vec2(-1,-1),vec2(3,-1),vec2(-1,3));out vec2 uv;
+void main(){gl_Position=vec4(p[gl_VertexID],0,1);uv=p[gl_VertexID]*.5+.5;}`;
+const POSTFRAG = `#version 300 es
+precision highp float;
+precision highp int;in vec2 uv;out vec4 color;uniform sampler2D uScene;uniform vec2 uSize;uniform float uTime,uExposure,uRays,uWave,uBloom;
+void main(){vec2 q=uv;vec2 px=1./uSize;
+ q+=vec2(sin(uv.y*23.+uTime*.37),sin(uv.x*19.-uTime*.31))*uWave*.0007;
+ vec3 c=texture(uScene,q).rgb;
+ vec3 a=texture(uScene,q+vec2(px.x,0.)).rgb,b=texture(uScene,q-vec2(px.x,0.)).rgb,d=texture(uScene,q+vec2(0.,px.y)).rgb,e=texture(uScene,q-vec2(0.,px.y)).rgb;
+ float edge=length(a-b)+length(d-e);c=mix(c,(a+b+d+e)*.25,clamp(edge*.3,0.,.25));
+ float x=uv.x+(.5-uv.x)*(1.-uv.y)*.28;
+ float beams=pow(max(0.,sin(x*37.+sin(x*7.+uTime*.08)*.4)),18.)*.024+pow(max(0.,sin(x*61.+uTime*.025)),30.)*.014;
+ float rays=beams*pow(uv.y,.8)*uRays;
+ c+=vec3(.2,.6,.8)*rays;
+ vec3 glow=max((a+b+d+e)*.25-vec3(.55),vec3(0.));c+=glow*.22*uBloom;
+ c*=uExposure; c=c/(vec3(1.)+c); c=pow(max(c,vec3(0.)),vec3(1./2.2));
+ float vignette=(1.-smoothstep(.2,.9,length((uv-.5)*vec2(1.05,.8))));c*=.75+.25*vignette;color=vec4(c,1.);
+}`;
+const PARTICLEVERT = `#version 300 es
+precision highp float;
+precision highp int;layout(location=0)in vec3 aPos;uniform mat4 uVP;uniform float uTime,uDPR;out float vAlpha;
+void main(){vec3 p=aPos;p.x+=sin(uTime*.13+p.y)*.15;p.y=mod(p.y+uTime*.045+4.,8.)-4.;gl_Position=uVP*vec4(p,1.);gl_PointSize=clamp(22./gl_Position.w,1.,3.)*uDPR;vAlpha=.12+.15*sin(p.x*7.);}`;
+const PARTICLEFRAG = `#version 300 es
+precision mediump float;in float vAlpha;out vec4 color;void main(){float a=1.-smoothstep(.1,.5,length(gl_PointCoord-.5));color=vec4(.45,.8,.9,a*vAlpha);}`;
+class Renderer {
+  constructor(canvas, { preview = false, onError = () => {} } = {}) {
+    this.canvas = canvas;
+    this.preview = preview;
+    this.onError = onError;
+    this.cache = new Map();
+    this.textures = new Map();
+    this.lost = false;
+    this.frames = 0;
+    this.init();
+    canvas.addEventListener("webglcontextlost", (e) => {
+      e.preventDefault();
+      this.lost = true;
+      this.onError(
+        "Графический контекст приостановлен. Данные проекта сохранены в памяти.",
+      );
+    });
+    canvas.addEventListener("webglcontextrestored", () => {
+      this.init();
+      this.lost = false;
+      this.onError("Графика восстановлена.");
+    });
+  }
+  shader(type, source) {
+    const g = this.gl,
+      s = g.createShader(type);
+    g.shaderSource(s, source);
+    g.compileShader(s);
+    if (!g.getShaderParameter(s, g.COMPILE_STATUS)) {
+      const log = g.getShaderInfoLog(s);
+      g.deleteShader(s);
+      throw Error("Ошибка компиляции графики: " + log);
+    }
+    return s;
+  }
+  program(v, f) {
+    const g = this.gl,
+      p = g.createProgram(),
+      vs = this.shader(g.VERTEX_SHADER, v),
+      fs = this.shader(g.FRAGMENT_SHADER, f);
+    g.attachShader(p, vs);
+    g.attachShader(p, fs);
+    g.linkProgram(p);
+    g.deleteShader(vs);
+    g.deleteShader(fs);
+    if (!g.getProgramParameter(p, g.LINK_STATUS))
+      throw Error(g.getProgramInfoLog(p));
+    const u = {};
+    for (let i = 0; i < g.getProgramParameter(p, g.ACTIVE_UNIFORMS); i++) {
+      const a = g.getActiveUniform(p, i);
+      u[a.name] = g.getUniformLocation(p, a.name);
+    }
+    return { p, u };
+  }
+  init() {
+    const g = this.canvas.getContext("webgl2", {
+      alpha: false,
+      antialias: false,
+      powerPreference: "high-performance",
+      preserveDrawingBuffer: false,
+    });
+    if (!g)
+      throw Error(
+        "WebGL2 недоступен. Попробуй актуальный Safari или Chrome с включённым аппаратным ускорением.",
+      );
+    this.gl = g;
+    this.maxDimension = Math.min(
+      4096,
+      g.getParameter(g.MAX_TEXTURE_SIZE),
+      g.getParameter(g.MAX_RENDERBUFFER_SIZE),
+    );
+    this.main = this.program(VERT, FRAG);
+    this.post = this.program(POSTVERT, POSTFRAG);
+    this.part = this.program(PARTICLEVERT, PARTICLEFRAG);
+    this.cache = new Map();
+    this.textures = new Map();
+    this.empty = g.createTexture();
+    g.bindTexture(g.TEXTURE_2D, this.empty);
+    g.texImage2D(
+      g.TEXTURE_2D,
+      0,
+      g.RGBA,
+      1,
+      1,
+      0,
+      g.RGBA,
+      g.UNSIGNED_BYTE,
+      new Uint8Array([180, 205, 215, 255]),
+    );
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR);
+    this.postVAO = g.createVertexArray();
+    this.fbo = g.createFramebuffer();
+    this.target = g.createTexture();
+    this.depth = g.createRenderbuffer();
+    this.dims = [0, 0];
+    this.uploadParticles();
+  }
+  uploadParticles() {
+    const g = this.gl,
+      r = seeded(1024),
+      a = [];
+    for (let i = 0; i < 200; i++)
+      a.push((r() - 0.5) * 18, (r() - 0.5) * 8, (r() - 0.5) * 8);
+    this.particleVAO = g.createVertexArray();
+    g.bindVertexArray(this.particleVAO);
+    this.particleBuffer = g.createBuffer();
+    g.bindBuffer(g.ARRAY_BUFFER, this.particleBuffer);
+    g.bufferData(g.ARRAY_BUFFER, new Float32Array(a), g.STATIC_DRAW);
+    g.enableVertexAttribArray(0);
+    g.vertexAttribPointer(0, 3, g.FLOAT, false, 12, 0);
+    g.bindVertexArray(null);
+  }
+  mesh(key, build) {
+    if (this.cache.has(key)) return this.cache.get(key);
+    const g = this.gl,
+      a = build(),
+      vao = g.createVertexArray(),
+      buffer = g.createBuffer();
+    g.bindVertexArray(vao);
+    g.bindBuffer(g.ARRAY_BUFFER, buffer);
+    g.bufferData(g.ARRAY_BUFFER, a, g.STATIC_DRAW);
+    for (const [i, size, offset] of [
+      [0, 3, 0],
+      [1, 3, 12],
+      [2, 2, 24],
+      [3, 2, 32],
+    ]) {
+      g.enableVertexAttribArray(i);
+      g.vertexAttribPointer(i, size, g.FLOAT, false, 40, offset);
+    }
+    g.bindVertexArray(null);
+    const m = { vao, buffer, count: a.length / 10 };
+    this.cache.set(key, m);
+    return m;
+  }
+  fishMesh(spec, lod) {
+    if (this.cache.size > 80) {
+      const g = this.gl;
+      for (const [k, m] of this.cache)
+        if (k.startsWith("fish:")) {
+          g.deleteVertexArray(m.vao);
+          g.deleteBuffer(m.buffer);
+          this.cache.delete(k);
+        }
+    }
+    const shape = spec.shape || {},
+      key = "fish:" + spec.form + ":" + lod + ":" + JSON.stringify(shape);
+    return this.mesh(key, () => fishGeometry(FORM_MAP[spec.form], lod, shape));
+  }
+  dropSpecies(id) {
+    for (const [k, m] of this.cache)
+      if (k.startsWith("fish:") && k.includes(id)) {
+        this.gl.deleteVertexArray(m.vao);
+        this.gl.deleteBuffer(m.buffer);
+        this.cache.delete(k);
+      }
+  }
+  texture(asset) {
+    if (!asset?.canvas) return this.empty;
+    const id = asset.id;
+    if (this.textures.has(id)) return this.textures.get(id);
+    const g = this.gl,
+      t = g.createTexture();
+    g.bindTexture(g.TEXTURE_2D, t);
+    g.pixelStorei(g.UNPACK_FLIP_Y_WEBGL, false);
+    g.texImage2D(
+      g.TEXTURE_2D,
+      0,
+      g.RGBA,
+      g.RGBA,
+      g.UNSIGNED_BYTE,
+      asset.canvas,
+    );
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR_MIPMAP_LINEAR);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.CLAMP_TO_EDGE);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.CLAMP_TO_EDGE);
+    g.generateMipmap(g.TEXTURE_2D);
+    this.textures.set(id, t);
+    return t;
+  }
+  gc(activeAssets) {
+    const g = this.gl;
+    for (const [id, t] of this.textures)
+      if (!activeAssets.has(id)) {
+        g.deleteTexture(t);
+        this.textures.delete(id);
+      }
+  }
+  resize(quality = 1) {
+    const r = this.canvas.getBoundingClientRect(),
+      desiredDPR = this.preview
+        ? Math.min(devicePixelRatio, 1.4)
+        : Math.min(devicePixelRatio, [1, 1.35, 1.8][quality] || 1.35);
+    const dpr = Math.min(
+      desiredDPR,
+      this.maxDimension / Math.max(1, r.width),
+      this.maxDimension / Math.max(1, r.height),
+      Math.sqrt(4000000 / Math.max(1, r.width * r.height)),
+    );
+    const w = Math.max(1, Math.floor(r.width * dpr)),
+      h = Math.max(1, Math.floor(r.height * dpr));
+    if (this.canvas.width !== w || this.canvas.height !== h) {
+      this.canvas.width = w;
+      this.canvas.height = h;
+    }
+    this.dpr = dpr;
+    this.allocate(w, h);
+  }
+  allocate(w, h) {
+    if (this.dims[0] === w && this.dims[1] === h) return;
+    const g = this.gl;
+    g.bindTexture(g.TEXTURE_2D, this.target);
+    g.texImage2D(
+      g.TEXTURE_2D,
+      0,
+      g.RGBA8,
+      w,
+      h,
+      0,
+      g.RGBA,
+      g.UNSIGNED_BYTE,
+      null,
+    );
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.CLAMP_TO_EDGE);
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.CLAMP_TO_EDGE);
+    g.bindRenderbuffer(g.RENDERBUFFER, this.depth);
+    g.renderbufferStorage(g.RENDERBUFFER, g.DEPTH_COMPONENT16, w, h);
+    g.bindFramebuffer(g.FRAMEBUFFER, this.fbo);
+    g.framebufferTexture2D(
+      g.FRAMEBUFFER,
+      g.COLOR_ATTACHMENT0,
+      g.TEXTURE_2D,
+      this.target,
+      0,
+    );
+    g.framebufferRenderbuffer(
+      g.FRAMEBUFFER,
+      g.DEPTH_ATTACHMENT,
+      g.RENDERBUFFER,
+      this.depth,
+    );
+    if (g.checkFramebufferStatus(g.FRAMEBUFFER) !== g.FRAMEBUFFER_COMPLETE)
+      throw Error("Не удалось выделить графическую память. Уменьши качество.");
+    g.bindFramebuffer(g.FRAMEBUFFER, null);
+    this.dims = [w, h];
+  }
+  uniforms(options = {}) {
+    const g = this.gl,
+      u = this.main.u;
+    g.uniformMatrix4fv(u.uModel, false, options.model || identity());
+    g.uniform1i(u.uMode, options.mode || 0);
+    g.uniform3fv(u.uColor, options.color || [0.1, 0.5, 0.6]);
+    g.uniform1f(u.uOpacity, options.opacity ?? 1);
+    g.uniform1f(u.uKind, options.kind ?? -1);
+    g.uniform1f(u.uPhase, options.phase || 0);
+    g.uniform1f(u.uSpeed, options.speed || 0.6);
+    g.uniform1f(u.uCrystal, options.crystal || 0);
+    g.uniform1f(u.uSelected, options.selected || 0);
+    g.uniform1i(u.uHasPhoto, options.asset ? 1 : 0);
+    g.uniform1f(u.uPhotoStrength, options.photo?.strength ?? 0.9);
+    g.uniform4fv(u.uCrop, [
+      options.photo?.x || 0,
+      options.photo?.y || 0,
+      options.photo?.zoom || 1,
+      options.photo?.zoom || 1,
+    ]);
+    g.uniform1f(u.uPhotoAngle, ((options.photo?.angle || 0) * Math.PI) / 180);
+    g.uniform1f(u.uPhotoFlip, options.photo?.flip ? 1 : 0);
+    g.uniform1i(
+      u.uBackMode,
+      options.photo?.back === "base"
+        ? 1
+        : options.photo?.back === "mirror"
+          ? 2
+          : 0,
+    );
+    g.uniform1f(u.uPhotoFins, options.photo?.fins ? 1 : 0);
+    g.uniform1f(u.uSaturation, options.photo?.saturation ?? 1);
+    g.uniform1f(u.uBrightness, options.photo?.brightness ?? 1);
+    const ar = options.asset?.canvas
+        ? options.asset.canvas.width / options.asset.canvas.height
+        : 1,
+      br = options.bodyAspect || 1,
+      fit = options.photo?.fit === "fit";
+    g.uniform2fv(
+      u.uPhotoSpan,
+      fit
+        ? [Math.max(1, br / ar), Math.max(1, ar / br)]
+        : [Math.min(1, br / ar), Math.min(1, ar / br)],
+    );
+    g.uniform1f(u.uScalePattern, options.photo?.scales ?? 1);
+    g.activeTexture(g.TEXTURE0);
+    g.bindTexture(g.TEXTURE_2D, this.texture(options.asset));
+    g.uniform1i(u.uPhoto, 0);
+  }
+  object(key, build, options) {
+    this.uniforms(options);
+    const g = this.gl,
+      m = this.mesh(key, build);
+    g.bindVertexArray(m.vao);
+    g.drawArrays(g.TRIANGLES, 0, m.count);
+  }
+  draw(state, assets, time, previewFish = null) {
+    if (this.lost) return;
+    this.lastState = state;
+    this.lastAssets = assets;
+    this.lastTime = time;
+    this.resize(state.effectiveQuality ?? 1);
+    const g = this.gl,
+      w = this.canvas.width,
+      h = this.canvas.height;
+    g.bindFramebuffer(g.FRAMEBUFFER, this.fbo);
+    g.viewport(0, 0, w, h);
+    g.clearColor(0.003, 0.025, 0.043, 1);
+    g.clear(g.COLOR_BUFFER_BIT | g.DEPTH_BUFFER_BIT);
+    g.enable(g.DEPTH_TEST);
+    g.disable(g.CULL_FACE);
+    g.enable(g.BLEND);
+    g.blendFunc(g.SRC_ALPHA, g.ONE_MINUS_SRC_ALPHA);
+    g.depthMask(true);
+    const cam = state.camera,
+      aspect = w / h;
+    const distance = this.preview
+      ? Math.max(2.9, (FORM_MAP[state.species[0]?.form]?.length || 1.7) * 1.6)
+      : cam.distance;
+    const yaw = this.preview ? (state.previewYaw ?? 0.35) : cam.yaw,
+      pitch = this.preview ? 0.12 : cam.pitch,
+      target = this.preview ? [0, -0.05, 0] : cam.target || [0, -0.15, 0];
+    this.eye = [
+      target[0] + Math.sin(yaw) * Math.cos(pitch) * distance,
+      target[1] + Math.sin(pitch) * distance,
+      target[2] + Math.cos(yaw) * Math.cos(pitch) * distance,
+    ];
+    this.vp = mm(
+      perspective((42 * Math.PI) / 180, aspect, 0.1, 100),
+      lookAt(this.eye, target),
+    );
+    const u = this.main.u;
+    g.useProgram(this.main.p);
+    g.uniformMatrix4fv(u.uVP, false, this.vp);
+    g.uniform3fv(u.uEye, this.eye);
+    g.uniform3fv(u.uLight, [0.2, 1, 0.4]);
+    g.uniform1f(u.uTime, time);
+    g.uniform1f(u.uWaterTime, state.waterTime ?? time);
+    g.uniform1f(u.uWave, state.settings.wave);
+    g.uniform1f(u.uClear, state.settings.clear);
+    g.uniform1f(u.uCaustics, state.settings.caustics);
+    g.uniform1f(u.uDepth, state.settings.light === "deep" ? 0.72 : 1);
+    g.uniform1f(u.uExposure, 1);
+    if (!this.preview) this.environment(state, time, false);
+    const fishes = previewFish ? [previewFish] : state.fish;
+    const sorted = fishes
+      .filter((f) => !f.hidden)
+      .map((f) => ({ f, d: V.len(V.sub(f.pos, this.eye)) }))
+      .sort((a, b) => b.d - a.d);
+    for (const { f, d } of sorted) {
+      const sp = state.species.find((s) => s.id === f.species);
+      if (!sp) continue;
+      const form = FORM_MAP[sp.form],
+        index = FORMS.indexOf(form),
+        quality = state.effectiveQuality ?? 1,
+        lod = quality === 0 || d > 23 ? 0 : 1;
+      const m = this.fishMesh(sp, lod);
+      this.uniforms({
+        model: model(f.pos, f.dir || [1, 0, 0], f.size || 1),
+        mode: 0,
+        color: rgb(sp.color || form.color),
+        phase: f.phase,
+        kind: index,
+        speed: V.len(f.vel || [0.5, 0, 0]),
+        crystal: state.settings.material === "crystal" && !sp.asset ? 1 : 0,
+        selected: state.selected === f.id ? 1 : 0,
+        asset: assets.get(sp.asset),
+        photo: sp.photo,
+        bodyAspect:
+          (form.length * (sp.shape?.length || 1)) /
+          (form.height * (sp.shape?.height || 1)),
+      });
+      g.bindVertexArray(m.vao);
+      g.depthMask(true);
+      g.drawArrays(g.TRIANGLES, 0, m.count);
+    }
+    g.depthMask(true);
+    if (!this.preview) {
+      this.environment(state, state.waterTime ?? time, true);
+      if (state.settings.particles && state.effectiveQuality > 0) {
+        g.useProgram(this.part.p);
+        g.uniformMatrix4fv(this.part.u.uVP, false, this.vp);
+        g.uniform1f(this.part.u.uTime, time);
+        g.uniform1f(this.part.u.uDPR, this.dpr);
+        g.bindVertexArray(this.particleVAO);
+        g.depthMask(false);
+        g.drawArrays(g.POINTS, 0, state.effectiveQuality === 2 ? 200 : 100);
+        g.depthMask(true);
+      }
+    }
+    g.bindFramebuffer(g.FRAMEBUFFER, null);
+    g.viewport(0, 0, w, h);
+    g.disable(g.DEPTH_TEST);
+    g.disable(g.BLEND);
+    g.useProgram(this.post.p);
+    g.bindVertexArray(this.postVAO);
+    g.activeTexture(g.TEXTURE0);
+    g.bindTexture(g.TEXTURE_2D, this.target);
+    g.uniform1i(this.post.u.uScene, 0);
+    g.uniform2f(this.post.u.uSize, w, h);
+    g.uniform1f(this.post.u.uTime, state.waterTime ?? time);
+    g.uniform1f(
+      this.post.u.uExposure,
+      state.settings.exposure * (state.settings.light === "evening" ? 0.72 : 1),
+    );
+    g.uniform1f(
+      this.post.u.uRays,
+      !this.preview && state.settings.rays && state.effectiveQuality > 0
+        ? 1
+        : 0,
+    );
+    g.uniform1f(this.post.u.uWave, this.preview ? 0 : state.settings.wave);
+    g.uniform1f(this.post.u.uBloom, state.settings.bloom ? 1 : 0);
+    g.drawArrays(g.TRIANGLES, 0, 3);
+    this.frames++;
+  }
+  environment(state, time, transparent) {
+    const g = this.gl,
+      s = state.settings;
+    if (!transparent) {
+      this.object("floor", () => planeGeometry("xz", 18, 8, 20, 10), {
+        mode: 1,
+        model: model([0, -4, 0]),
+        color: s.floor === "dark" ? [0.08, 0.12, 0.13] : [0.065, 0.12, 0.16],
+      });
+      this.object("back", () => planeGeometry("xy", 18, 8), {
+        mode: 3,
+        model: model([0, 0, -4]),
+        color: [0.005, 0.035, 0.085],
+      });
+      for (const x of [-9, 9])
+        this.object("side", () => planeGeometry("yz", 8, 8), {
+          mode: 3,
+          model: model([x, 0, 0]),
+          color: [0.004, 0.03, 0.07],
+        });
+      for (const d of state.decor) {
+        if (d.type === "rock")
+          this.object("rock:" + d.seed, () => rockGeometry(d.seed), {
+            mode: 5,
+            model: scaled(d.pos, d.scale),
+            color: [0.16, 0.23, 0.24],
+          });
+        else
+          this.object("plant:" + d.seed, () => plantGeometry(d.seed), {
+            mode: 6,
+            model: scaled(d.pos, d.scale),
+            color: [0.055, 0.2, 0.15],
+            phase: d.seed,
+            opacity: 0.95,
+          });
+      }
+      // Soft projected shadows. These are visual approximations, not shadow maps.
+      for (const f of state.fish) {
+        if (f.hidden) continue;
+        const alpha = 0.1 * Math.exp(-(f.pos[1] + 4) * 0.28),
+          sp = state.species.find((s) => s.id === f.species);
+        if (!sp) continue;
+        const size = f.size || 1;
+        this.object(
+          "shadow",
+          () => {
+            const z = new Geometry();
+            for (let i = 0; i < 32; i++) {
+              const a = (i / 32) * TAU,
+                b = ((i + 1) / 32) * TAU;
+              z.tri(
+                [0, 0, 0],
+                [Math.cos(a), 0, Math.sin(a)],
+                [Math.cos(b), 0, Math.sin(b)],
+              );
+            }
+            return z.build();
+          },
+          {
+            mode: 9,
+            model: scaled(
+              [f.pos[0], -3.99, f.pos[2]],
+              [size * FORM_MAP[sp.form].length * 0.4, 1, size * 0.28],
+            ),
+            opacity: alpha,
+          },
+        );
+      }
+      for (const food of state.food)
+        this.object(
+          "food",
+          () => {
+            const z = new Geometry();
+            z.ellipsoid([0, 0, 0], [0.025, 0.025, 0.025], 0, 5, 7);
+            return z.build();
+          },
+          { mode: 8, model: model(food.pos), color: [0.48, 0.35, 0.12] },
+        );
+    } else {
+      g.depthMask(false);
+      this.object("surface", () => planeGeometry("xz", 18, 8, 64, 32), {
+        mode: 2,
+        model: model([0, 3.93, 0]),
+        color: [0.04, 0.3, 0.4],
+        opacity: 0.7,
+      });
+      if (s.bubbles) {
+        for (let i = 0; i < (state.effectiveQuality === 0 ? 10 : 22); i++) {
+          const a = seeded(44 + i),
+            y = -3.8 + ((time * (0.6 + a() * 0.3) + i * 0.71) % 7.7),
+            x = -6.4 + Math.sin(time * 0.4 + i) * 0.1,
+            z = -1.3 + Math.cos(i * 3) * 0.14,
+            r = 0.025 + a() * 0.025;
+          this.object(
+            "bubble",
+            () => {
+              const q = new Geometry();
+              q.ellipsoid([0, 0, 0], [1, 1, 1], 0, 6, 9);
+              return q.build();
+            },
+            {
+              mode: 7,
+              model: scaled([x, y, z], [r, r * 1.07, r]),
+              opacity: 0.6,
+            },
+          );
+        }
+      }
+      if (s.glass) {
+        this.object("front", () => planeGeometry("xy", 18, 8), {
+          mode: 4,
+          model: model([0, 0, 4.02]),
+          opacity: 0.5,
+        });
+      }
+      // Visible fine glass joints, generated as narrow strips with actual depth.
+      const jointColor = [0.08, 0.37, 0.45];
+      for (const x of [-9, 9])
+        for (const z of [-4.01, 4.01])
+          this.object("joint", () => planeGeometry("xy", 0.025, 8), {
+            mode: 4,
+            model: model([x, 0, z]),
+            color: jointColor,
+            opacity: 0.9,
+          });
+      g.depthMask(true);
+    }
+  }
+  snapshot() {
+    if (!this.lastState) throw Error("Сцена ещё не готова.");
+    this.draw(this.lastState, this.lastAssets, this.lastTime);
+    const g = this.gl,
+      w = this.canvas.width,
+      h = this.canvas.height,
+      pixels = new Uint8Array(w * h * 4);
+    g.readPixels(0, 0, w, h, g.RGBA, g.UNSIGNED_BYTE, pixels);
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    const im = c.getContext("2d").createImageData(w, h);
+    for (let y = 0; y < h; y++)
+      im.data.set(
+        pixels.subarray((h - y - 1) * w * 4, (h - y) * w * 4),
+        y * w * 4,
+      );
+    c.getContext("2d").putImageData(im, 0, 0);
+    return new Promise((r, j) =>
+      c.toBlob(
+        (b) => (b ? r(b) : j(Error("Не удалось создать снимок."))),
+        "image/png",
+      ),
+    );
+  }
+  diagnostics() {
+    const g = this.gl;
+    return {
+      api: "WebGL2",
+      maxTextureSize: g.getParameter(g.MAX_TEXTURE_SIZE),
+      canvas: [this.canvas.width, this.canvas.height],
+      gpuMeshes: this.cache.size,
+      gpuTextures: this.textures.size,
+      frames: this.frames,
+      renderPath: "RGBA8 + screen-space postprocess; no HDR ray tracing",
+      physicalDeviceTested: false,
+    };
+  }
+}
+
+
+// AquaMorph / project data and deterministic, fixed-step motion.
+const DEFAULT_SETTINGS = {
+  material: "crystal",
+  wave: 1,
+  waterSpeed: 1,
+  current: 0.5,
+  caustics: 1,
+  clear: 0.65,
+  exposure: 1.55,
+  light: "day",
+  floor: "sand",
+  rays: true,
+  particles: true,
+  bubbles: true,
+  glass: true,
+  bloom: true,
+  speed: 1,
+  quality: "auto",
+  theme: "system",
+};
+function standardSpecies() {
+  return FORMS.map((f) => ({
+    id: "std-" + f.id,
+    form: f.id,
+    name: f.name,
+    color: f.color,
+    custom: false,
+    shape: { length: 1, height: 1, thick: 1, tail: 1, dorsal: 1 },
+    photo: {
+      zoom: 1,
+      x: 0,
+      y: 0,
+      angle: 0,
+      flip: false,
+      strength: 0.95,
+      back: "repeat",
+      scales: 1,
+      fit: "fill",
+      saturation: 1,
+      brightness: 1,
+      fins: false,
+    },
+    asset: null,
+    speed: f.speed,
+    school: f.school,
+    depth: f.id === "ray" ? -2.8 : f.id === "jelly" ? 0.7 : 0,
+  }));
+}
+function defaultDecor() {
+  return [
+    {
+      id: uid(),
+      type: "rock",
+      seed: 12,
+      pos: [-6.5, -3.65, -1.5],
+      scale: [1.3, 0.65, 1],
+    },
+    {
+      id: uid(),
+      type: "rock",
+      seed: 71,
+      pos: [-5.1, -3.85, -2.1],
+      scale: [0.8, 0.4, 0.7],
+    },
+    {
+      id: uid(),
+      type: "rock",
+      seed: 44,
+      pos: [6.8, -3.75, -2.3],
+      scale: [1.1, 0.55, 0.8],
+    },
+    {
+      id: uid(),
+      type: "plant",
+      seed: 33,
+      pos: [-7.4, -4, -2],
+      scale: [1, 1.5, 1],
+    },
+    {
+      id: uid(),
+      type: "plant",
+      seed: 79,
+      pos: [7, -4, -2.6],
+      scale: [1, 1.65, 1],
+    },
+    {
+      id: uid(),
+      type: "plant",
+      seed: 111,
+      pos: [5.9, -4, -3.1],
+      scale: [0.7, 0.9, 0.7],
+    },
+  ];
+}
+function newProject() {
+  return {
+    version: 1,
+    name: "Моя тихая глубина",
+    species: standardSpecies(),
+    fish: [],
+    decor: defaultDecor(),
+    camera: { yaw: 0, pitch: 0.1, distance: 16.6, target: [0, -0.1, 0] },
+    settings: { ...DEFAULT_SETTINGS },
+    food: [],
+    impulses: [],
+    selected: null,
+    paused: false,
+    effectiveQuality: 1,
+    seed: 238,
+    dirty: false,
+    follow: false,
+  };
+}
+const rng = seeded(238);
+function capacity(state) {
+  return state.effectiveQuality === 0 ? 36 : 64;
+}
+function safePosition(state, sp) {
+  const f = FORM_MAP[sp.form],
+    b = speciesBounds(sp),
+    r = Math.hypot(b[0], b[2]) * 1.1,
+    lim = [8.8 - r, 3.6 - Math.max(b[1] * 1.1, r * 0.4), 3.8 - r];
+  for (let n = 0; n < 40; n++) {
+    const p = [
+      (rng() - 0.5) * 2 * Math.min(7, lim[0]),
+      clamp(sp.depth + (rng() - 0.5) * 4, -lim[1], lim[1]),
+      (rng() - 0.5) * 2 * Math.min(2.7, lim[2]),
+    ];
+    if (
+      !state.decor.some(
+        (d) =>
+          d.type === "rock" &&
+          V.len(V.sub(p, d.pos)) < Math.max(...d.scale) + r,
+      ) &&
+      !state.fish.some((o) => V.len(V.sub(p, o.pos)) < 0.5)
+    )
+      return p;
+  }
+  return [0, 1, 0];
+}
+function createFish(state, speciesId, count = 1) {
+  const sp = state.species.find((s) => s.id === speciesId);
+  if (!sp) throw Error("Вид не найден.");
+  if (state.fish.length + count > capacity(state))
+    throw Error(
+      "Достигнут графический лимит: " +
+        capacity(state) +
+        " обитателей. Удали часть рыб или повысь качество.",
+    );
+  for (let i = 0; i < count; i++) {
+    const a = rng() * TAU,
+      v = [Math.cos(a) * sp.speed, 0.02, Math.sin(a) * sp.speed];
+    state.fish.push({
+      id: uid(),
+      species: speciesId,
+      name: sp.name,
+      pos: safePosition(state, sp),
+      vel: v,
+      dir: V.norm(v),
+      size: 0.8 + rng() * 0.3,
+      phase: rng() * TAU,
+      hidden: false,
+      wander: rng() * 100,
+    });
+  }
+  state.dirty = true;
+}
+function populate(state) {
+  for (const [id, n] of [
+    ["tetra", 6],
+    ["gold", 2],
+    ["angel", 2],
+    ["discus", 2],
+    ["betta", 1],
+    ["shark", 1],
+    ["ray", 1],
+    ["horse", 1],
+    ["jelly", 2],
+    ["turtle", 1],
+  ])
+    createFish(state, "std-" + id, n);
+  state.dirty = false;
+}
+const boundCache = new Map();
+function speciesBounds(sp) {
+  const key = sp.form + JSON.stringify(sp.shape);
+  if (boundCache.has(key)) return boundCache.get(key);
+  const a = fishGeometry(FORM_MAP[sp.form], 0, sp.shape),
+    b = [0, 0, 0];
+  for (let i = 0; i < a.length; i += 10)
+    for (let j = 0; j < 3; j++)
+      b[j] = Math.max(b[j], Math.abs(a[i + j]) + 0.12);
+  boundCache.set(key, b);
+  if (boundCache.size > 100) boundCache.delete(boundCache.keys().next().value);
+  return b;
+}
+function simulate(state, dt, time) {
+  const visible = state.fish.filter((f) => !f.hidden),
+    grid = new Map(),
+    cellSize = 2.3;
+  const key = (x, y, z) => x + "," + y + "," + z;
+  for (const f of visible) {
+    const c = f.pos.map((v) => Math.floor(v / cellSize));
+    f._cell = c;
+    const k = key(...c);
+    if (!grid.has(k)) grid.set(k, []);
+    grid.get(k).push(f);
+  }
+  for (const f of visible) {
+    const sp = state.species.find((s) => s.id === f.species);
+    if (!sp) continue;
+    const form = FORM_MAP[sp.form],
+      maxSpeed = sp.speed * (0.75 + f.size * 0.25),
+      force = [0, 0, 0];
+    const forceAdd = (a, s = 1) => {
+      for (let i = 0; i < 3; i++) force[i] += a[i] * s;
+    };
+    forceAdd(
+      [
+        Math.sin(time * 0.19 + f.wander),
+        Math.sin(time * 0.13 + f.phase) * 0.25,
+        Math.cos(time * 0.17 + f.wander * 0.7),
+      ],
+      0.23,
+    );
+    force[1] += (sp.depth - f.pos[1]) * 0.055;
+    forceAdd(
+      [
+        Math.sin(time * 0.07 + f.pos[2] * 0.3),
+        0,
+        Math.cos(time * 0.09 + f.pos[0] * 0.2),
+      ],
+      (state.settings.current ?? 0.5) * 0.07,
+    );
+    const [cx, cy, cz] = f._cell;
+    let same = 0,
+      center = [0, 0, 0],
+      align = [0, 0, 0];
+    for (let a = -1; a <= 1; a++)
+      for (let b = -1; b <= 1; b++)
+        for (let c = -1; c <= 1; c++) {
+          const near = grid.get(key(cx + a, cy + b, cz + c)) || [];
+          for (const other of near) {
+            if (other === f) continue;
+            const diff = V.sub(f.pos, other.pos),
+              d = V.len(diff),
+              safe = 0.3 + (f.size + other.size) * 0.19;
+            if (d > 0 && d < safe)
+              forceAdd(V.mul(diff, 1 / d), Math.min(2, (safe - d) * 3));
+            if (sp.school && other.species === f.species && d < 2.3) {
+              center = V.add(center, other.pos);
+              align = V.add(align, other.vel);
+              same++;
+            }
+          }
+        }
+    if (same) {
+      forceAdd(V.sub(V.mul(center, 1 / same), f.pos), 0.11);
+      forceAdd(V.sub(V.mul(align, 1 / same), f.vel), 0.18);
+    }
+    const b = speciesBounds(sp),
+      horizontal = Math.hypot(b[0], b[2]) * f.size,
+      rx = horizontal,
+      rz = horizontal,
+      ry = Math.max(b[1] * f.size, horizontal * 0.4);
+    const limits = [8.9 - rx, 3.7 - ry, 3.9 - rz];
+    for (let i = 0; i < 3; i++) {
+      const ahead = f.pos[i] + f.vel[i] * 1.5,
+        margin = limits[i] - Math.abs(ahead);
+      if (margin < 1.25) force[i] += -Math.sign(ahead) * (1.25 - margin) * 0.7;
+    }
+    for (const d of state.decor)
+      if (d.type === "rock") {
+        const diff = V.sub(f.pos, d.pos),
+          dist = V.len(diff),
+          radius = Math.max(...d.scale) + 0.7;
+        if (dist < radius && dist > 0.001)
+          forceAdd(V.norm(diff), (radius - dist) * 1.5);
+      }
+    for (const impulse of state.impulses) {
+      const diff = V.sub(f.pos, impulse.pos),
+        d = V.len(diff);
+      if (d < 3 && d > 0.01)
+        forceAdd(
+          V.norm(diff),
+          (3 - d) * Math.max(0, 1 - (time - impulse.time) / 2) * 0.7,
+        );
+    }
+    if (form.id !== "jelly" && form.id !== "horse" && state.food.length) {
+      let best = null,
+        dist = 6;
+      for (const food of state.food) {
+        const d = V.len(V.sub(food.pos, f.pos));
+        if (d < dist) {
+          dist = d;
+          best = food;
+        }
+      }
+      if (best) {
+        forceAdd(V.norm(V.sub(best.pos, f.pos)), 0.6);
+        if (dist < 0.2) best.eaten = true;
+      }
+    }
+    f.vel = V.add(f.vel, V.mul(force, dt));
+    const speed = V.len(f.vel);
+    if (speed > maxSpeed) f.vel = V.mul(f.vel, maxSpeed / speed);
+    if (speed < maxSpeed * 0.35 && speed > 0.001)
+      f.vel = V.mul(f.vel, (maxSpeed * 0.35) / speed);
+    f.vel[1] = clamp(f.vel[1], -maxSpeed * 0.4, maxSpeed * 0.4);
+    f.pos = V.add(f.pos, V.mul(f.vel, dt));
+    for (let i = 0; i < 3; i++)
+      if (Math.abs(f.pos[i]) > limits[i]) {
+        f.pos[i] = clamp(f.pos[i], -limits[i], limits[i]);
+        f.vel[i] = Math.sign(f.pos[i]) * -Math.abs(f.vel[i]) * 0.5;
+      }
+    const desired = V.norm(f.vel);
+    f.dir = V.norm(
+      f.dir.map((v, i) => mix(v, desired[i], 1 - Math.exp(-dt * 2.1))),
+    );
+  }
+  for (const food of state.food) {
+    food.pos[1] -= dt * 0.12;
+    food.life -= dt;
+  }
+  state.food = state.food.filter(
+    (f) => !f.eaten && f.life > 0 && f.pos[1] > -3.95,
+  );
+  state.impulses = state.impulses.filter((i) => time - i.time < 2);
+  if (state.follow && state.selected) {
+    const f = state.fish.find((f) => f.id === state.selected);
+    if (f)
+      state.camera.target = state.camera.target.map((v, i) =>
+        mix(v, f.pos[i] * 0.5, 1 - Math.exp(-dt * 1.1)),
+      );
+  }
+}
+function packProject(state, assets) {
+  const used = new Set(state.species.map((s) => s.asset).filter(Boolean));
+  return {
+    format: "AquaMorph",
+    version: 1,
+    name: state.name,
+    seed: state.seed,
+    species: state.species,
+    fish: state.fish.map(({ _cell, ...f }) => f),
+    decor: state.decor,
+    camera: state.camera,
+    settings: state.settings,
+    assets: [...assets.values()]
+      .filter((a) => used.has(a.id))
+      .map((a) => ({
+        id: a.id,
+        data: a.data,
+        width: a.canvas.width,
+        height: a.canvas.height,
+      })),
+  };
+}
+function finite(n, lo, hi, label) {
+  if (typeof n !== "number" || !Number.isFinite(n) || n < lo || n > hi)
+    throw Error("Недопустимое значение: " + label);
+  return n;
+}
+function string(s, max, label) {
+  if (typeof s !== "string" || s.length > max || !s.trim())
+    throw Error("Некорректное поле: " + label);
+  return s.trim();
+}
+function vector(a, lo, hi, label) {
+  if (!Array.isArray(a) || a.length !== 3)
+    throw Error("Некорректный вектор: " + label);
+  return a.map((n) => finite(n, lo, hi, label));
+}
+function validateProject(raw) {
+  if (
+    !raw ||
+    typeof raw !== "object" ||
+    raw.format !== "AquaMorph" ||
+    raw.version !== 1
+  )
+    throw Error("Неподдерживаемый формат или версия проекта.");
+  if (
+    !Array.isArray(raw.species) ||
+    raw.species.length < 1 ||
+    raw.species.length > 45 ||
+    !Array.isArray(raw.fish) ||
+    raw.fish.length > 64 ||
+    !Array.isArray(raw.assets) ||
+    raw.assets.length > 24 ||
+    !Array.isArray(raw.decor) ||
+    raw.decor.length > 30
+  )
+    throw Error("Превышены допустимые размеры проекта.");
+  const ids = new Set(),
+    assetIds = new Set();
+  const clean = newProject();
+  clean.name = string(raw.name, 80, "название");
+  const assetRecords = raw.assets.map((a) => {
+    const id = string(a.id, 80, "текстура");
+    if (assetIds.has(id)) throw Error("Повтор идентификатора текстуры.");
+    assetIds.add(id);
+    if (
+      typeof a.data !== "string" ||
+      a.data.length > 3e6 ||
+      !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(a.data)
+    )
+      throw Error("Недопустимая встроенная текстура.");
+    return { id, data: a.data };
+  });
+  clean.species = raw.species.map((s) => {
+    if (!FORM_MAP[s.form]) throw Error("Неизвестная форма обитателя.");
+    const id = string(s.id, 80, "вид");
+    if (ids.has(id)) throw Error("Повтор идентификатора вида.");
+    ids.add(id);
+    if (s.asset && !assetIds.has(s.asset))
+      throw Error("Не найдена текстура вида.");
+    const sh = s.shape || {},
+      ph = s.photo || {};
+    return {
+      id,
+      form: s.form,
+      name: string(s.name, 50, "имя вида"),
+      custom: !!s.custom,
+      color: /^#[0-9a-f]{6}$/i.test(s.color) ? s.color : FORM_MAP[s.form].color,
+      asset: s.asset || null,
+      shape: {
+        ...Object.fromEntries(
+          ["length", "height", "thick", "tail", "dorsal"].map((k) => [
+            k,
+            finite(sh[k] ?? 1, 0.5, 1.8, k),
+          ]),
+        ),
+        tailStyle: ["default", "fork", "round", "point"].includes(sh.tailStyle)
+          ? sh.tailStyle
+          : "default",
+      },
+      photo: {
+        zoom: finite(ph.zoom ?? 1, 0.3, 3, "масштаб фото"),
+        x: finite(ph.x ?? 0, -1, 1, "сдвиг фото"),
+        y: finite(ph.y ?? 0, -1, 1, "сдвиг фото"),
+        angle: finite(ph.angle ?? 0, -180, 180, "угол фото"),
+        flip: !!ph.flip,
+        strength: finite(ph.strength ?? 0.95, 0, 1, "сила фото"),
+        back: ["base", "repeat", "mirror"].includes(ph.back)
+          ? ph.back
+          : "repeat",
+        fit: ph.fit === "fit" ? "fit" : "fill",
+        fins: !!ph.fins,
+        saturation: finite(ph.saturation ?? 1, 0, 1.5, "насыщенность"),
+        brightness: finite(ph.brightness ?? 1, 0.5, 1.8, "яркость"),
+        scales: finite(ph.scales ?? 1, 0, 1, "чешуя"),
+      },
+      speed: finite(s.speed ?? 0.6, 0.1, 1.6, "скорость"),
+      school: !!s.school,
+      depth: finite(s.depth ?? 0, -2.8, 2.8, "глубина"),
+    };
+  });
+  const fishIds = new Set();
+  clean.fish = raw.fish.map((f) => {
+    const id = string(f.id, 80, "рыба");
+    if (fishIds.has(id) || !ids.has(f.species))
+      throw Error("Неверная ссылка экземпляра.");
+    fishIds.add(id);
+    return {
+      id,
+      species: f.species,
+      name: string(f.name, 50, "имя рыбы"),
+      pos: vector(f.pos, -9, 9, "положение"),
+      vel: vector(f.vel, -2, 2, "скорость"),
+      dir: vector(f.dir, -1, 1, "направление"),
+      size: finite(f.size, 0.5, 1.5, "размер"),
+      phase: finite(f.phase, 0, TAU, "фаза"),
+      wander: finite(f.wander ?? 0, 0, 1000, "маршрут"),
+      hidden: !!f.hidden,
+    };
+  });
+  clean.decor = raw.decor.map((d) => {
+    if (!["rock", "plant"].includes(d.type)) throw Error("Неизвестный декор.");
+    const pos = vector(d.pos, -9, 9, "декор");
+    if (
+      pos[1] < -4.1 ||
+      pos[1] > -2.8 ||
+      Math.abs(pos[0]) > 8 ||
+      Math.abs(pos[2]) > 3.7
+    )
+      throw Error("Декор за границей грунта.");
+    return {
+      id: string(d.id, 80, "декор"),
+      type: d.type,
+      seed: finite(d.seed, 0, 10000, "декор"),
+      pos,
+      scale: vector(d.scale, 0.2, 2, "размер декора"),
+    };
+  });
+  const c = raw.camera || {};
+  clean.camera = {
+    yaw: finite(c.yaw ?? 0, -0.7, 0.7, "камера"),
+    pitch: finite(c.pitch ?? 0.1, -0.12, 0.45, "камера"),
+    distance: finite(c.distance ?? 16.6, 11, 24, "камера"),
+    target: vector(c.target || [0, -0.1, 0], -5, 5, "цель камеры"),
+  };
+  const s = raw.settings || {};
+  for (const k of [
+    "wave",
+    "waterSpeed",
+    "current",
+    "caustics",
+    "clear",
+    "exposure",
+    "speed",
+  ])
+    if (k in s)
+      clean.settings[k] = finite(
+        s[k],
+        ...{
+          wave: [0, 2],
+          waterSpeed: [0, 2],
+          current: [0, 2],
+          caustics: [0, 2],
+          clear: [0.15, 1],
+          exposure: [0.6, 2.5],
+          speed: [0.2, 2],
+        }[k],
+        k,
+      );
+  for (const k of ["rays", "particles", "bubbles", "glass", "bloom"])
+    if (k in s) {
+      if (typeof s[k] !== "boolean") throw Error("Неверный переключатель.");
+      clean.settings[k] = s[k];
+    }
+  for (const [k, values] of Object.entries({
+    material: ["crystal", "natural"],
+    light: ["day", "evening", "deep"],
+    floor: ["sand", "dark"],
+    quality: ["auto", "low", "medium", "high"],
+    theme: ["system", "dark", "light"],
+  }))
+    if (k in s) {
+      if (!values.includes(s[k])) throw Error("Неверный режим " + k);
+      clean.settings[k] = s[k];
+    }
+  return { state: clean, assets: assetRecords };
+}
+async function decodeAsset(record) {
+  const im = new Image();
+  im.src = record.data;
+  await im.decode();
+  if (
+    im.naturalWidth > 1536 ||
+    im.naturalHeight > 1536 ||
+    im.naturalWidth * im.naturalHeight > 2.4e6
+  )
+    throw Error("В проекте слишком большая текстура.");
+  const c = document.createElement("canvas");
+  c.width = im.naturalWidth;
+  c.height = im.naturalHeight;
+  c.getContext("2d").drawImage(im, 0, 0);
+  return { id: record.id, data: record.data, canvas: c };
+}
+function localDB() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB)
+      return reject(
+        Error(
+          "Браузер не предоставляет локальное хранилище. Используй экспорт файла.",
+        ),
+      );
+    const req = indexedDB.open("aquamorph-local", 1);
+    req.onupgradeneeded = () => req.result.createObjectStore("projects");
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(Error("Локальное хранилище недоступно."));
+  });
+}
+async function dbAction(mode, value) {
+  const db = await localDB();
+  try {
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(
+          "projects",
+          mode === "get" ? "readonly" : "readwrite",
+        ),
+        store = tx.objectStore("projects");
+      let req;
+      if (mode === "get") req = store.get("last");
+      else if (mode === "delete") req = store.delete("last");
+      else req = store.put(value, "last");
+      req.onsuccess = () => {
+        if (mode === "get") resolve(req.result);
+      };
+      tx.oncomplete = () => {
+        if (mode !== "get") resolve();
+      };
+      tx.onerror = () =>
+        reject(
+          Error("Не удалось сохранить данные: возможно, закончилось место."),
+        );
+      tx.onabort = () => reject(Error("Операция хранения прервана."));
+    });
+  } finally {
+    db.close();
+  }
+}
+
+
+// AquaMorph / accessible UI, local assets, scene controls and lifecycle.
+const $ = (id) => document.getElementById(id),
+  esc = (s) =>
+    String(s).replace(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[c],
+    );
+let storageStatus = "Демо",
+  changeVersion = 0;
+let state = newProject(),
+  assets = new Map(),
+  renderer,
+  previewRenderer,
+  draft = null,
+  editingFish = null,
+  previewYaw = 0.35,
+  time = 0,
+  last = 0,
+  acc = 0,
+  raf = 0,
+  drawerMode = "",
+  toastTimer,
+  photoToken = 0,
+  snapshotURL = null,
+  autoSave = false,
+  autoTimer,
+  frameMS = 16.7,
+  qualityFrames = 0;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+if (reduced.matches) state.paused = true;
+function toast(text) {
+  $("toast").textContent = text;
+  $("toast").hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => ($("toast").hidden = true), 5500);
+}
+function dirty() {
+  changeVersion++;
+  state.dirty = true;
+  $("saveState").textContent = "Не сохранено";
+  if (autoSave) {
+    clearTimeout(autoTimer);
+    autoTimer = setTimeout(() => saveLocal(true), 2000);
+  }
+}
+function countUI() {
+  $("population").textContent = state.fish.length + " обитателей";
+  $("saveState").textContent = state.dirty ? "Не сохранено" : storageStatus;
+  $("pause").setAttribute("aria-pressed", state.paused);
+  $("pause").setAttribute(
+    "aria-label",
+    state.paused ? "Продолжить аквариум" : "Приостановить аквариум",
+  );
+  $("pause").innerHTML =
+    '<svg class="icon" aria-hidden="true"><use href="#i-' +
+    (state.paused ? "play" : "pause") +
+    '"/></svg><span class="label-desktop">' +
+    (state.paused ? "Продолжить" : "Пауза") +
+    "</span>";
+  document.documentElement.dataset.theme = state.settings.theme;
+}
+function quality() {
+  state.effectiveQuality =
+    state.settings.quality === "auto"
+      ? innerWidth < 650
+        ? 0
+        : 1
+      : { low: 0, medium: 1, high: 2 }[state.settings.quality];
+  qualityFrames = 0;
+}
+function button(text, fn, cls = "") {
+  const b = document.createElement("button");
+  b.textContent = text;
+  b.className = cls;
+  b.addEventListener("click", () => guard(fn));
+  return b;
+}
+function guard(fn) {
+  try {
+    const p = fn();
+    if (p?.catch) p.catch((e) => toast(e.message));
+  } catch (e) {
+    toast(e.message);
+  }
+}
+function closeDrawer() {
+  $("drawer").hidden = true;
+  drawerMode = "";
+  $("intro").classList.remove("muted");
+}
+function openDrawer(mode) {
+  drawerMode = mode;
+  $("drawer").hidden = false;
+  $("intro").classList.add("muted");
+  $("drawerTabs").replaceChildren();
+  $("drawerBody").replaceChildren();
+  $("drawerTitle").textContent = {
+    catalog: "Обитатели",
+    settings: "Вода и свет",
+    project: "Мой проект",
+  }[mode];
+  if (mode === "catalog") renderCatalog();
+  if (mode === "settings") renderSettings();
+  if (mode === "project") renderProject();
+  $("closeDrawer").focus();
+}
+function tabs(items, current) {
+  $("drawerTabs").replaceChildren();
+  for (const [label, key, fn] of items) {
+    const b = button(label, fn);
+    b.setAttribute("aria-pressed", key === current);
+    $("drawerTabs").append(b);
+  }
+}
+let catalogTab = "forms",
+  catalogSearch = "",
+  catalogFilter = "all",
+  catalogCount = 1;
+const thumbnailCache = new Map();
+function speciesThumbnail(sp) {
+  const key = sp.form + JSON.stringify(sp.shape) + sp.color;
+  if (thumbnailCache.has(key)) return thumbnailCache.get(key);
+  const c = document.createElement("canvas");
+  c.width = 240;
+  c.height = 120;
+  const ctx = c.getContext("2d"),
+    data = fishGeometry(FORM_MAP[sp.form], 0, sp.shape),
+    tris = [];
+  let bound = 1;
+  const pt = (i) => {
+    const x = data[i],
+      y = data[i + 1],
+      z = data[i + 2];
+    return [x * 0.94 + z * 0.34, y * 0.95 + z * 0.2, -x * 0.3 + z * 0.94];
+  };
+  for (let i = 0; i < data.length; i += 30) {
+    const t = [pt(i), pt(i + 10), pt(i + 20)];
+    bound = Math.max(
+      bound,
+      ...t.flatMap((v) => [Math.abs(v[0]), Math.abs(v[1]) * 1.5]),
+    );
+    tris.push({
+      t,
+      part: data[i + 8],
+      z: t.reduce((a, p) => a + p[2], 0),
+      light: clamp(0.58 + data[i + 4] * 0.28 + data[i + 5] * 0.16, 0.3, 1),
+    });
+  }
+  const scale = 95 / bound;
+  ctx.translate(120, 62);
+  for (const tri of tris.sort((a, b) => a.z - b.z)) {
+    ctx.beginPath();
+    tri.t.forEach((p, j) =>
+      ctx[j ? "lineTo" : "moveTo"](p[0] * scale, -p[1] * scale),
+    );
+    ctx.closePath();
+    const col = rgb(sp.color).map((v) =>
+      Math.round((v * tri.light + 0.08) * 255),
+    );
+    ctx.fillStyle =
+      tri.part === 3
+        ? "#071b29"
+        : tri.part === 2
+          ? "#d4eef4"
+          : "rgba(" + col.join(",") + "," + (tri.part === 1 ? 0.65 : 1) + ")";
+    ctx.fill();
+  }
+  const url = c.toDataURL();
+  thumbnailCache.set(key, url);
+  if (thumbnailCache.size > 100)
+    thumbnailCache.delete(thumbnailCache.keys().next().value);
+  return url;
+}
+function renderCatalog(tab = catalogTab) {
+  catalogTab = tab;
+  tabs(
+    [
+      ["Формы", "forms", () => renderCatalog("forms")],
+      ["Мои виды", "custom", () => renderCatalog("custom")],
+      ["В аквариуме", "fish", () => renderCatalog("fish")],
+    ],
+    tab,
+  );
+  const body = $("drawerBody");
+  body.replaceChildren();
+  if (tab === "fish") {
+    const selectedIds = new Set(),
+      bar = document.createElement("div");
+    bar.className = "row";
+    bar.append(
+      button("Показать всех", () => {
+        state.fish.forEach((f) => (f.hidden = false));
+        dirty();
+        renderCatalog("fish");
+      }),
+      button(
+        "Удалить отмеченных",
+        async () => {
+          if (!selectedIds.size) return toast("Сначала отметь обитателей.");
+          if (
+            await confirmAction(
+              "Удалить отмеченных обитателей: " + selectedIds.size + "?",
+            )
+          ) {
+            state.fish = state.fish.filter((f) => !selectedIds.has(f.id));
+            selectFish(null);
+            dirty();
+            countUI();
+            renderCatalog("fish");
+          }
+        },
+        "danger",
+      ),
+    );
+    body.append(bar);
+    if (!state.fish.length) {
+      const p = document.createElement("p");
+      p.className = "empty";
+      p.textContent = "Здесь пока тихо. Добавь первую рыбу из каталога.";
+      body.append(
+        p,
+        button("Добавить первую рыбу", () => renderCatalog("forms")),
+      );
+    }
+    for (const f of state.fish) {
+      const sp = state.species.find((s) => s.id === f.species),
+        row = document.createElement("div");
+      row.className = "fish-row";
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.setAttribute("aria-label", "Отметить: " + f.name);
+      cb.onchange = () =>
+        cb.checked ? selectedIds.add(f.id) : selectedIds.delete(f.id);
+      const b = button(f.name, () => {
+        selectFish(f.id);
+        closeDrawer();
+      });
+      b.style.flex = "1";
+      b.title = sp.name + (sp.asset ? " · общая фото-текстура" : "");
+      row.append(
+        cb,
+        b,
+        button(f.hidden ? "Показать" : "Скрыть", () => {
+          f.hidden = !f.hidden;
+          dirty();
+          renderCatalog("fish");
+        }),
+      );
+      body.append(row);
+    }
+    return;
+  }
+  const controls = document.createElement("div");
+  controls.innerHTML =
+    '<label for="catalogSearch">Поиск вида</label><input id="catalogSearch" type="text" maxlength="50"><div class="cols"><div><label for="catalogFilter">Показать</label><select id="catalogFilter"><option value="all">Все формы</option><option value="fish">Рыбы</option><option value="other">Другие обитатели</option></select></div><div><label for="catalogCount">Количество</label><input id="catalogCount" type="number" min="1" max="10"></div></div>';
+  body.append(controls);
+  $("catalogSearch").value = catalogSearch;
+  $("catalogFilter").value = catalogFilter;
+  $("catalogCount").value = catalogCount;
+  const hint = document.createElement("p");
+  hint.className = "hint";
+  hint.textContent =
+    "В воде: " +
+    state.fish.length +
+    " / " +
+    capacity(state) +
+    ". Это графический лимит, а не правила содержания животных.";
+  body.append(hint);
+  const grid = document.createElement("div");
+  grid.className = "catalog-grid";
+  body.append(
+    grid,
+    button("Создать свой вид", () => openEditor(), "primary"),
+  );
+  function cards() {
+    grid.replaceChildren();
+    for (const sp of state.species.filter(
+      (s) =>
+        (tab === "custom" ? s.custom : !s.custom) &&
+        (catalogFilter === "all" || FORM_MAP[s.form].group === catalogFilter) &&
+        s.name.toLocaleLowerCase().includes(catalogSearch.toLocaleLowerCase()),
+    )) {
+      const card = document.createElement("article");
+      card.className = "species-card";
+      const title = document.createElement("h3");
+      title.textContent = sp.name;
+      const p = document.createElement("p");
+      p.className = "hint";
+      p.textContent =
+        (sp.asset ? "Фото · " : sp.custom ? "Мой профиль · " : "") +
+        (sp.school ? "Стайный" : "Спокойный одиночный");
+      const image = document.createElement("img");
+      image.src = speciesThumbnail(sp);
+      image.alt = "Форма: " + FORM_MAP[sp.form].name;
+      card.append(
+        image,
+        title,
+        p,
+        button("Добавить", () => {
+          if (
+            !Number.isInteger(catalogCount) ||
+            catalogCount < 1 ||
+            catalogCount > 10
+          )
+            throw Error("Количество — от 1 до 10.");
+          createFish(state, sp.id, catalogCount);
+          dirty();
+          countUI();
+          hint.textContent =
+            "В воде: " + state.fish.length + " / " + capacity(state);
+          toast("Обитатели уже в воде");
+        }),
+      );
+      if (sp.custom)
+        card.append(
+          button("Изменить", () => openEditor(sp)),
+          button("Удалить вид", async () => {
+            if (
+              !(await confirmAction(
+                "Удалить пользовательский вид из каталога?",
+              ))
+            )
+              return;
+            const fish = state.fish.filter((f) => f.species === sp.id);
+            if (fish.length) {
+              const remove = await confirmAction(
+                "Удалить также его обитателей (" +
+                  fish.length +
+                  ")? «Отмена» оставит их с базовой окраской выбранной формы.",
+              );
+              if (remove)
+                state.fish = state.fish.filter((f) => f.species !== sp.id);
+              else for (const f of fish) f.species = "std-" + sp.form;
+            }
+            state.species = state.species.filter((s) => s.id !== sp.id);
+            gcAssets();
+            dirty();
+            countUI();
+            selectFish(null);
+            cards();
+          }),
+        );
+      grid.append(card);
+    }
+    if (!grid.children.length) {
+      const p = document.createElement("p");
+      p.className = "empty";
+      p.textContent =
+        "Подходящих видов нет. Измени поиск или создай свой профиль.";
+      grid.append(p);
+    }
+  }
+  $("catalogSearch").oninput = (e) => {
+    catalogSearch = e.target.value;
+    cards();
+  };
+  $("catalogFilter").onchange = (e) => {
+    catalogFilter = e.target.value;
+    cards();
+  };
+  $("catalogCount").oninput = (e) => (catalogCount = +e.target.value);
+  cards();
+}
+function settingRange(root, label, key, min, max, step) {
+  const id = "set-" + key,
+    wrap = document.createElement("div");
+  wrap.innerHTML =
+    '<label for="' +
+    id +
+    '">' +
+    label +
+    '</label><div class="range"><input type="range" id="' +
+    id +
+    '" min="' +
+    min +
+    '" max="' +
+    max +
+    '" step="' +
+    step +
+    '" value="' +
+    state.settings[key] +
+    '"><output>' +
+    state.settings[key] +
+    "</output></div>";
+  wrap.querySelector("input").oninput = (e) => {
+    state.settings[key] = +e.target.value;
+    wrap.querySelector("output").textContent = e.target.value;
+    dirty();
+  };
+  root.append(wrap);
+}
+function settingSelect(root, label, key, options) {
+  const id = "set-" + key,
+    wrap = document.createElement("div");
+  wrap.innerHTML =
+    '<label for="' +
+    id +
+    '">' +
+    label +
+    '</label><select id="' +
+    id +
+    '">' +
+    Object.entries(options)
+      .map(
+        ([v, t]) =>
+          '<option value="' +
+          v +
+          '"' +
+          (state.settings[key] === v ? " selected" : "") +
+          ">" +
+          t +
+          "</option>",
+      )
+      .join("") +
+    "</select>";
+  wrap.querySelector("select").onchange = (e) => {
+    state.settings[key] = e.target.value;
+    quality();
+    countUI();
+    dirty();
+  };
+  root.append(wrap);
+}
+function settingCheck(root, label, key) {
+  const wrap = document.createElement("label");
+  wrap.className = "check-label";
+  const i = document.createElement("input");
+  i.type = "checkbox";
+  i.checked = state.settings[key];
+  i.onchange = () => {
+    state.settings[key] = i.checked;
+    dirty();
+  };
+  wrap.append(i, document.createTextNode(label));
+  root.append(wrap);
+}
+function renderSettings() {
+  const b = $("drawerBody");
+  b.replaceChildren();
+  const pres = document.createElement("div");
+  pres.className = "row";
+  for (const [name, s] of [
+    [
+      "Ясная глубина",
+      { light: "day", clear: 0.65, exposure: 1.55, caustics: 1, wave: 1 },
+    ],
+    [
+      "Тихий вечер",
+      {
+        light: "evening",
+        clear: 0.55,
+        exposure: 1.4,
+        caustics: 0.6,
+        wave: 0.4,
+      },
+    ],
+    [
+      "Тёмная вода",
+      { light: "deep", clear: 0.35, exposure: 1.2, caustics: 0.8, wave: 0.6 },
+    ],
+  ])
+    pres.append(
+      button(name, () => {
+        Object.assign(state.settings, s);
+        dirty();
+        renderSettings();
+      }),
+    );
+  b.append(pres);
+  settingSelect(b, "Материал обитателей", "material", {
+    crystal: "Кристальный / художественный",
+    natural: "Окрашенный / непрозрачный",
+  });
+  settingSelect(b, "Свет", "light", {
+    day: "Дневной",
+    evening: "Вечерний",
+    deep: "Глубина",
+  });
+  for (const args of [
+    ["Сила волн", "wave", 0, 2, 0.05],
+    ["Темп волн", "waterSpeed", 0, 2, 0.05],
+    ["Течение", "current", 0, 2, 0.05],
+    ["Каустика", "caustics", 0, 2, 0.05],
+    ["Прозрачность воды", "clear", 0.15, 1, 0.05],
+    ["Экспозиция", "exposure", 0.6, 2.5, 0.05],
+    ["Темп жизни", "speed", 0.2, 2, 0.05],
+  ])
+    settingRange(b, ...args);
+  settingSelect(b, "Грунт", "floor", {
+    sand: "Светлый песок",
+    dark: "Тёмный грунт",
+  });
+  for (const [l, k] of [
+    ["Лучи света", "rays"],
+    ["Частицы в воде", "particles"],
+    ["Пузырьки", "bubbles"],
+    ["Стеклянная стенка", "glass"],
+    ["Мягкое свечение", "bloom"],
+  ])
+    settingCheck(b, l, k);
+  settingSelect(b, "Качество", "quality", {
+    auto: "Автоматически",
+    low: "Экономное",
+    medium: "Среднее",
+    high: "Высокое",
+  });
+  settingSelect(b, "Тема управления", "theme", {
+    system: "Как на устройстве",
+    dark: "Тёмная",
+    light: "Светлая",
+  });
+  const row = document.createElement("div");
+  row.className = "row";
+  row.append(
+    button("Ближе", () => {
+      state.camera.distance = clamp(state.camera.distance - 1, 11, 24);
+      dirty();
+    }),
+    button("Дальше", () => {
+      state.camera.distance = clamp(state.camera.distance + 1, 11, 24);
+      dirty();
+    }),
+  );
+  b.append(row);
+  const h = document.createElement("h3");
+  h.textContent = "Дно и декор";
+  b.append(h);
+  const dr = document.createElement("div");
+  dr.className = "row";
+  for (const [l, type] of [
+    ["Камень", "rock"],
+    ["Растение", "plant"],
+  ])
+    dr.append(
+      button("+ " + l, () => {
+        if (state.decor.length >= 30)
+          throw Error("Лимит — 30 объектов декора.");
+        state.decor.push({
+          id: uid(),
+          type,
+          seed: Math.floor(rng() * 9000),
+          pos: [
+            (rng() - 0.5) * 14,
+            type === "rock" ? -3.6 : -4,
+            (rng() - 0.5) * 5.5,
+          ],
+          scale: type === "rock" ? [0.6, 0.4, 0.65] : [0.8, 1.3, 0.8],
+        });
+        dirty();
+        toast("Декор добавлен");
+      }),
+    );
+  dr.append(
+    button("Убрать декор", async () => {
+      if (await confirmAction("Убрать весь декор?")) {
+        state.decor = [];
+        dirty();
+      }
+    }),
+  );
+  b.append(dr);
+  if (state.decor.length) {
+    const box = document.createElement("div"),
+      sel = document.createElement("select");
+    sel.setAttribute("aria-label", "Выбрать декор");
+    for (const d of state.decor) {
+      const o = document.createElement("option");
+      o.value = d.id;
+      o.textContent =
+        (d.type === "rock" ? "Камень" : "Растение") +
+        " " +
+        (state.decor.indexOf(d) + 1);
+      sel.append(o);
+    }
+    box.append(sel);
+    const options = document.createElement("div");
+    box.append(options);
+    function decorControls() {
+      options.replaceChildren();
+      const d = state.decor.find((d) => d.id === sel.value);
+      if (!d) return;
+      for (const [label, index, min, max] of [
+        ["Положение слева / справа", 0, -8, 8],
+        ["Положение в глубине", 2, -3.5, 3.5],
+      ]) {
+        const lab = document.createElement("label"),
+          i = document.createElement("input");
+        lab.textContent = label;
+        i.type = "range";
+        i.min = min;
+        i.max = max;
+        i.step = 0.1;
+        i.value = d.pos[index];
+        lab.append(i);
+        i.oninput = () => {
+          d.pos[index] = +i.value;
+          dirty();
+        };
+        options.append(lab);
+      }
+      const lab = document.createElement("label"),
+        i = document.createElement("input");
+      lab.textContent = "Масштаб декора";
+      i.type = "range";
+      i.min = 0.3;
+      i.max = 1.8;
+      i.step = 0.1;
+      i.value = d.scale[0];
+      lab.append(i);
+      i.oninput = () => {
+        const ratio = +i.value / d.scale[0];
+        d.scale = d.scale.map((v) => clamp(v * ratio, 0.2, 2));
+        dirty();
+      };
+      options.append(
+        lab,
+        button(
+          "Удалить этот объект",
+          () => {
+            state.decor = state.decor.filter((o) => o !== d);
+            dirty();
+            renderSettings();
+          },
+          "danger",
+        ),
+      );
+    }
+    sel.onchange = decorControls;
+    decorControls();
+    b.append(box);
+  }
+  b.append(
+    button("Диагностика", () => {
+      toast(
+        JSON.stringify({
+          ...renderer.diagnostics(),
+          fps: Math.round(1000 / frameMS),
+          quality: state.effectiveQuality,
+        }),
+      );
+    }),
+  );
+}
+function renderProject() {
+  const b = $("drawerBody");
+  b.replaceChildren();
+  const title = document.createElement("h3");
+  title.textContent = state.name;
+  b.append(
+    title,
+    button("Переименовать проект", async () => {
+      const n = await confirmAction("Новое имя проекта", state.name);
+      if (n) {
+        state.name = n;
+        dirty();
+        renderProject();
+      }
+    }),
+  );
+  const p = document.createElement("p");
+  p.className = "hint";
+  const size = new Blob([JSON.stringify(packProject(state, assets))]).size;
+  p.textContent =
+    "Проект с текстурами: примерно " +
+    (size / 1024 / 1024).toFixed(2) +
+    " МБ. Фото остаются в браузере и в выбранном файле.";
+  b.append(
+    p,
+    button("Справка и приватность", () => $("helpDialog").showModal()),
+  );
+  for (const [l, fn] of [
+    ["Скачать проект JSON", exportProject],
+    ["Импортировать проект", () => $("projectInput").click()],
+    ["Сохранить на этом устройстве", () => saveLocal()],
+    [
+      "Восстановить последнее сохранение",
+      async () => {
+        const raw = await dbAction("get");
+        if (!raw) throw Error("На этом устройстве нет сохранения.");
+        await importRaw(raw);
+      },
+    ],
+    [
+      "Удалить локальное сохранение",
+      async () => {
+        if (await confirmAction("Удалить сохранение с этого устройства?")) {
+          autoSave = false;
+          clearTimeout(autoTimer);
+          await dbAction("delete");
+          toast("Локальное сохранение удалено");
+          renderProject();
+        }
+      },
+    ],
+  ])
+    b.append(button(l, fn));
+  const check = document.createElement("label");
+  check.className = "check-label";
+  const cb = document.createElement("input");
+  cb.type = "checkbox";
+  cb.checked = autoSave;
+  cb.onchange = async () => {
+    if (cb.checked) {
+      if (
+        !(await confirmAction(
+          "Разрешить автоматическое хранение проекта и фотографий только в этом браузере?",
+        ))
+      ) {
+        cb.checked = false;
+        return;
+      }
+      autoSave = true;
+      await saveLocal();
+    } else {
+      autoSave = false;
+      clearTimeout(autoTimer);
+    }
+  };
+  check.append(
+    cb,
+    document.createTextNode("Автосохранение на этом устройстве"),
+  );
+  b.append(check);
+  const hr = document.createElement("hr");
+  hr.className = "line";
+  b.append(
+    hr,
+    button(
+      "Очистить аквариум",
+      async () => {
+        if (
+          await confirmAction(
+            "Убрать всех обитателей? Виды и фотографии останутся в каталоге.",
+          )
+        ) {
+          state.fish = [];
+          selectFish(null);
+          dirty();
+          countUI();
+          toast("Аквариум свободен");
+        }
+      },
+      "danger",
+    ),
+    button("Новый аквариум", async () => {
+      if (
+        await confirmAction(
+          "Создать новый аквариум? Несохранённые изменения будут потеряны.",
+        )
+      ) {
+        state = newProject();
+        storageStatus = "Демо";
+        populate(state);
+        assets.clear();
+        gcAssets();
+        quality();
+        countUI();
+        selectFish(null);
+        renderProject();
+      }
+    }),
+  );
+}
+function download(blob, name) {
+  const u = URL.createObjectURL(blob),
+    a = document.createElement("a");
+  a.href = u;
+  a.download = name;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 30000);
+}
+function exportProject() {
+  download(
+    new Blob([JSON.stringify(packProject(state, assets))], {
+      type: "application/json",
+    }),
+    "aquamorph-project.json",
+  );
+  toast("Файл проекта подготовлен. Проверь загрузки браузера.");
+}
+async function saveLocal(quiet = false) {
+  const version = changeVersion,
+    savingState = state;
+  $("saveState").textContent = "Сохранение…";
+  try {
+    await dbAction("put", packProject(state, assets));
+    if (state === savingState && version === changeVersion) {
+      state.dirty = false;
+      storageStatus = "Сохранено";
+      $("saveState").textContent = "Сохранено";
+    } else $("saveState").textContent = "Не сохранено";
+    if (!quiet) toast("Проект сохранён в этом браузере");
+  } catch (e) {
+    $("saveState").textContent = "Не сохранено";
+    toast(e.message);
+  }
+}
+async function importRaw(raw) {
+  const checked = validateProject(raw),
+    loaded = new Map();
+  for (const a of checked.assets) loaded.set(a.id, await decodeAsset(a));
+  if (
+    !(await confirmAction(
+      "Заменить текущий аквариум импортированным проектом?",
+    ))
+  )
+    return;
+  state = checked.state;
+  storageStatus = "Импортирован";
+  assets = loaded;
+  gcAssets();
+  quality();
+  state.paused = reduced.matches;
+  countUI();
+  selectFish(null);
+  closeDrawer();
+  toast("Проект восстановлен");
+}
+$("projectInput").onchange = async (e) => {
+  const f = e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  try {
+    if (f.size > 35 * 1024 * 1024) throw Error("Лимит файла проекта — 35 МБ.");
+    await importRaw(JSON.parse(await f.text()));
+  } catch (err) {
+    toast("Импорт отменён: " + err.message);
+  }
+};
+function gcAssets() {
+  const ids = new Set(state.species.map((s) => s.asset).filter(Boolean));
+  if (draft?.asset) ids.add(draft.asset);
+  for (const id of assets.keys()) if (!ids.has(id)) assets.delete(id);
+  renderer?.gc(ids);
+  previewRenderer?.gc(ids);
+}
+function confirmAction(message, initial = null) {
+  return new Promise((resolve) => {
+    const d = $("confirmDialog");
+    $("confirmMessage").textContent = message;
+    $("confirmInput").hidden = initial === null;
+    $("confirmInput").value = initial || "";
+    $("confirmError").textContent = "";
+    let result = false;
+    const finish = () => {
+      d.removeEventListener("close", finish);
+      resolve(result);
+    };
+    d.addEventListener("close", finish);
+    $("confirmOK").onclick = () => {
+      if (initial !== null) {
+        const v = $("confirmInput").value.trim();
+        if (!v) {
+          $("confirmError").textContent = "Введи непустое имя.";
+          return;
+        }
+        result = v;
+      } else result = true;
+      d.close();
+    };
+    $("confirmCancel").onclick = $("confirmClose").onclick = () => d.close();
+    d.showModal();
+    if (initial !== null) $("confirmInput").focus();
+  });
+}
+function selectFish(id) {
+  state.selected = id;
+  const f = state.fish.find((f) => f.id === id);
+  $("selection").hidden = !f;
+  if (!f) {
+    state.follow = false;
+    return;
+  }
+  $("selectedName").textContent = f.name;
+  const sp = state.species.find((s) => s.id === f.species);
+  $("selectedType").textContent =
+    sp.name + (sp.asset ? " · фото на объёмном теле" : "");
+  $("followFish").setAttribute("aria-pressed", state.follow);
+}
+function selected() {
+  return state.fish.find((f) => f.id === state.selected);
+}
+function openEditor(spec = null, fish = null) {
+  closeDrawer();
+  editingFish = fish?.id || null;
+  draft = spec ? structuredClone(spec) : structuredClone(standardSpecies()[0]);
+  draft.id = spec?.custom ? spec.id : uid();
+  draft.custom = true;
+  draft.shape.tailStyle ||= "default";
+  if (!spec) draft.name = "Моя фоторыбка";
+  $("editorTitle").textContent = spec
+    ? "Изменить свой вид"
+    : "Создать свою рыбу";
+  $("speciesCount").disabled = !!fish;
+  $("speciesCount").value = 1;
+  $("updateAllLabel").hidden = !spec?.custom;
+  $("updateAll").checked = !!spec?.custom && !fish;
+  $("editorError").textContent = "";
+  $("applySpecies").disabled = false;
+  $("applySpecies").textContent = fish
+    ? "Применить изменения"
+    : "Выпустить в воду";
+  writeDraft();
+  $("editor").showModal();
+  $("editor").scrollTop = 0;
+  $("editor").querySelector(".dialog-body").scrollTop = 0;
+  if (!previewRenderer)
+    try {
+      previewRenderer = new Renderer($("previewCanvas"), {
+        preview: true,
+        onError: toast,
+      });
+    } catch (e) {
+      $("editorError").textContent = e.message;
+    }
+  previewYaw = 0.35;
+}
+const fields = {
+  speciesName: ["name"],
+  formSelect: ["form"],
+  speciesColor: ["color"],
+  speciesSpeed: ["speed"],
+  speciesDepth: ["depth"],
+  speciesSchool: ["school"],
+  photoZoom: ["photo", "zoom"],
+  photoX: ["photo", "x"],
+  photoY: ["photo", "y"],
+  photoAngle: ["photo", "angle"],
+  photoStrength: ["photo", "strength"],
+  photoFlip: ["photo", "flip"],
+  backMode: ["photo", "back"],
+  photoScales: ["photo", "scales"],
+  photoFins: ["photo", "fins"],
+  photoSaturation: ["photo", "saturation"],
+  photoBrightness: ["photo", "brightness"],
+  tailStyle: ["shape", "tailStyle"],
+};
+function drawCrop() {
+  const a = assets.get(draft?.asset),
+    c = $("cropMap");
+  if (!c) return;
+  c.hidden = !a;
+  cropHint.hidden = !a;
+  if (!a) return;
+  c.width = 280;
+  c.height = 140;
+  const ctx = c.getContext("2d"),
+    im = a.canvas,
+    r = Math.min(280 / im.width, 140 / im.height),
+    w = im.width * r,
+    h = im.height * r,
+    x = (280 - w) / 2,
+    y = (140 - h) / 2;
+  ctx.fillStyle = "#071b29";
+  ctx.fillRect(0, 0, 280, 140);
+  ctx.drawImage(im, x, y, w, h);
+  const f = FORM_MAP[draft.form],
+    ar = im.width / im.height,
+    br =
+      (f.length * (draft.shape.length || 1)) /
+      (f.height * (draft.shape.height || 1)),
+    fit = draft.photo.fit === "fit",
+    sx = fit ? Math.max(1, br / ar) : Math.min(1, br / ar),
+    sy = fit ? Math.max(1, ar / br) : Math.min(1, ar / br),
+    ang = (draft.photo.angle * Math.PI) / 180;
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 3]);
+  ctx.beginPath();
+  for (const [i, p] of [
+    [-0.5, -0.5],
+    [0.5, -0.5],
+    [0.5, 0.5],
+    [-0.5, 0.5],
+  ].entries()) {
+    let u =
+        ((p[0] * Math.cos(ang) + p[1] * Math.sin(ang)) * sx) /
+          draft.photo.zoom +
+        0.5 +
+        draft.photo.x,
+      v =
+        ((-p[0] * Math.sin(ang) + p[1] * Math.cos(ang)) * sy) /
+          draft.photo.zoom +
+        0.5 +
+        draft.photo.y;
+    ctx[i ? "lineTo" : "moveTo"](x + u * w, y + (1 - v) * h);
+  }
+  ctx.closePath();
+  ctx.stroke();
+}
+function writeDraft() {
+  for (const [id, path] of Object.entries(fields)) {
+    const el = $(id),
+      v = path.reduce((a, k) => a?.[k], draft);
+    if (el.type === "checkbox") el.checked = !!v;
+    else el.value = v;
+    const o =
+      el.type === "range" ? el.parentElement.querySelector("output") : null;
+    if (o) o.textContent = el.value;
+  }
+  const special = ["ray", "horse", "turtle", "jelly"].includes(draft.form);
+  $("tailStyle").disabled = special;
+  for (const key of ["length", "height", "thick", "tail", "dorsal"]) {
+    $("shape-" + key).disabled = special && ["tail", "dorsal"].includes(key);
+    $("shape-" + key).value = draft.shape[key];
+    $("shape-" + key).nextElementSibling.textContent = draft.shape[key];
+  }
+  const a = assets.get(draft.asset);
+  $("sourcePhoto").hidden = true;
+  if (a) $("sourcePhoto").src = a.data;
+  else $("sourcePhoto").removeAttribute("src");
+  $("photoHint").textContent = a
+    ? "Фото готово. Проверь оба бока; сильная деформация формы искажает портрет."
+    : "Добавь фото или создай вид с обычной окраской.";
+  drawCrop();
+}
+function readDraft() {
+  for (const [id, path] of Object.entries(fields)) {
+    const el = $(id);
+    let v =
+      el.type === "checkbox"
+        ? el.checked
+        : ["range", "number"].includes(el.type)
+          ? +el.value
+          : el.value;
+    if (id === "photoScales") v = v ? 1 : 0;
+    let obj = draft;
+    for (const k of path.slice(0, -1)) obj = obj[k];
+    obj[path.at(-1)] = v;
+  }
+  for (const key of ["length", "height", "thick", "tail", "dorsal"])
+    draft.shape[key] = +$("shape-" + key).value;
+  drawCrop();
+}
+$("formSelect").innerHTML = FORMS.map(
+  (f) => '<option value="' + f.id + '">' + f.name + "</option>",
+).join("");
+for (const [key, label] of Object.entries({
+  length: "Длина тела",
+  height: "Высота тела",
+  thick: "Толщина тела",
+  tail: "Размер хвоста",
+  dorsal: "Размер плавников",
+})) {
+  const w = document.createElement("div");
+  w.innerHTML =
+    '<label for="shape-' +
+    key +
+    '">' +
+    label +
+    '</label><div class="range"><input id="shape-' +
+    key +
+    '" type="range" min=".5" max="1.8" step=".02" value="1"><output>1</output></div>';
+  $("shapeControls").append(w);
+}
+$("editor").addEventListener("input", (e) => {
+  if (!draft) return;
+  readDraft();
+  const o = e.target.parentElement.querySelector("output");
+  if (o) o.textContent = e.target.value;
+});
+$("formSelect").addEventListener("change", () => {
+  readDraft();
+  const f = FORM_MAP[draft.form];
+  draft.speed = f.speed;
+  draft.school = f.school;
+  fitPhoto("fill");
+  writeDraft();
+});
+function fitPhoto(mode) {
+  if (!draft?.asset) return;
+  draft.photo.fit = mode;
+  draft.photo.zoom = 1;
+  draft.photo.x = draft.photo.y = 0;
+  draft.photo.angle = 0;
+  writeDraft();
+}
+const cropMap = document.createElement("canvas");
+cropMap.id = "cropMap";
+cropMap.hidden = true;
+cropMap.setAttribute(
+  "aria-label",
+  "Белый контур показывает область выборки фотографии на теле; окончательный силуэт виден в объёмном предпросмотре.",
+);
+$("sourcePhoto").after(cropMap);
+const cropHint = document.createElement("p");
+cropHint.className = "hint";
+cropHint.textContent =
+  "Белый контур — область выборки фото. Итоговую маску тела смотри в объёмном предпросмотре.";
+cropMap.after(cropHint);
+const fitRow = document.createElement("div");
+fitRow.className = "row";
+fitRow.append(
+  button("Заполнить", () => fitPhoto("fill")),
+  button("Фото целиком", () => fitPhoto("fit")),
+);
+$("photoHint").after(fitRow);
+$("resetCrop").onclick = () => {
+  draft.photo = {
+    zoom: 1,
+    x: 0,
+    y: 0,
+    angle: 0,
+    flip: false,
+    strength: 0.95,
+    back: "repeat",
+    scales: 1,
+    fit: "fill",
+    saturation: 1,
+    brightness: 1,
+    fins: false,
+  };
+  writeDraft();
+};
+$("previewLeft").onclick = () => (previewYaw = 0.35);
+$("previewRight").onclick = () => (previewYaw = Math.PI + 0.35);
+let pvPointer = null;
+$("previewCanvas").addEventListener("pointerdown", (e) => {
+  pvPointer = e.clientX;
+  e.target.setPointerCapture(e.pointerId);
+});
+$("previewCanvas").addEventListener("pointermove", (e) => {
+  if (pvPointer !== null) {
+    previewYaw += (e.clientX - pvPointer) * 0.012;
+    pvPointer = e.clientX;
+  }
+});
+$("previewCanvas").addEventListener("pointerup", () => (pvPointer = null));
+$("previewCanvas").addEventListener("pointercancel", () => (pvPointer = null));
+$("replacePhoto").onclick = () => $("photoInput").click();
+$("openPhoto").onclick = () => {
+  openEditor();
+  $("photoInput").click();
+};
+$("photoInput").onchange = async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const token = ++photoToken;
+  $("applySpecies").disabled = true;
+  let url, bitmap;
+  try {
+    if (file.size > 15 * 1024 * 1024)
+      throw Error("Фото больше 15 МБ. Уменьши файл.");
+    if (
+      !/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name) &&
+      !/^image\/(jpeg|png|webp|heic|heif)$/.test(file.type)
+    )
+      throw Error("Выбери JPG, PNG или WebP.");
+    $("photoHint").textContent = "Чтение изображения…";
+    url = URL.createObjectURL(file);
+    if (typeof createImageBitmap === "function")
+      bitmap = await createImageBitmap(file, {
+        imageOrientation: "from-image",
+      });
+    else {
+      bitmap = new Image();
+      bitmap.src = url;
+      await bitmap.decode();
+    }
+    if (token !== photoToken || !draft) return;
+    const w = bitmap.width || bitmap.naturalWidth,
+      h = bitmap.height || bitmap.naturalHeight;
+    if (w * h > 36e6 || w > 16000 || h > 16000)
+      throw Error(
+        "Лимит разрешения — 36 мегапикселей и 16000 пикселей по стороне.",
+      );
+    $("photoHint").textContent = "Подготовка текстуры…";
+    await new Promise((r) => setTimeout(r, 0));
+    const scale = Math.min(1, 1024 / Math.max(w, h)),
+      c = document.createElement("canvas");
+    c.width = Math.round(w * scale);
+    c.height = Math.round(h * scale);
+    c.getContext("2d").drawImage(bitmap, 0, 0, c.width, c.height);
+    const a = { id: uid(), canvas: c, data: c.toDataURL("image/webp", 0.88) };
+    if (a.data.length > 2.9e6) {
+      const smaller = document.createElement("canvas");
+      smaller.width = Math.round(c.width * 0.7);
+      smaller.height = Math.round(c.height * 0.7);
+      smaller
+        .getContext("2d")
+        .drawImage(c, 0, 0, smaller.width, smaller.height);
+      a.canvas = smaller;
+      a.data = smaller.toDataURL("image/png");
+    }
+    if (token !== photoToken || !draft) return;
+    assets.set(a.id, a);
+    draft.asset = a.id;
+    gcAssets();
+    draft.photo.scales = 0;
+    fitPhoto("fill");
+    writeDraft();
+    $("photoHint").textContent = "Готово. Фото обработано на устройстве.";
+    $("editorError").textContent = "";
+  } catch (err) {
+    $("editorError").textContent =
+      "Не удалось открыть фото. " +
+      (/heic|heif/i.test(file.name)
+        ? "Сохрани его как JPG или PNG."
+        : err.message);
+    $("photoHint").textContent = "Текущее фото не изменено.";
+  } finally {
+    if (url) URL.revokeObjectURL(url);
+    bitmap?.close?.();
+    if (token === photoToken) $("applySpecies").disabled = false;
+  }
+};
+$("applySpecies").onclick = () => {
+  try {
+    readDraft();
+    draft.name = draft.name.trim();
+    if (!draft.name) throw Error("Дай виду имя.");
+    const count = +$("speciesCount").value;
+    if (!Number.isInteger(count) || count < 1 || count > 10)
+      throw Error("Количество — от 1 до 10.");
+    if (!editingFish && state.fish.length + count > capacity(state))
+      throw Error(
+        "Недостаточно места. Лимит текущего качества — " + capacity(state),
+      );
+    if (
+      state.species.length >= 45 &&
+      !state.species.some((s) => s.id === draft.id)
+    )
+      throw Error("Лимит — 45 видов.");
+    const old = state.species.find((s) => s.id === draft.id),
+      f = selected();
+    if (old && $("updateAll").checked) {
+      state.species[state.species.indexOf(old)] = structuredClone(draft);
+    } else {
+      draft.id = uid();
+      state.species.push(structuredClone(draft));
+    }
+    if (editingFish) {
+      const fish = state.fish.find((f) => f.id === editingFish);
+      if (fish) fish.species = draft.id;
+    } else createFish(state, draft.id, count);
+    dirty();
+    countUI();
+    $("editor").close();
+    selectFish(state.selected);
+    toast("Готово — твой вид в аквариуме");
+  } catch (e) {
+    $("editorError").textContent = e.message;
+  }
+};
+$("closeEditor").onclick = () => $("editor").close();
+$("editor").addEventListener("close", () => {
+  photoToken++;
+  draft = null;
+  editingFish = null;
+  gcAssets();
+});
+$("openCatalog").onclick = () => openDrawer("catalog");
+$("openSettings").onclick = () => openDrawer("settings");
+$("openProject").onclick = () => openDrawer("project");
+$("closeDrawer").onclick = closeDrawer;
+$("helpButton").onclick = () => $("helpDialog").showModal();
+$("closeHelp").onclick = () => $("helpDialog").close();
+$("closeSnapshot").onclick = () => $("snapshotDialog").close();
+$("loadRetry").onclick = () => location.reload();
+$("pause").onclick = () => {
+  state.paused = !state.paused;
+  countUI();
+  toast(state.paused ? "Всё движение приостановлено" : "Аквариум ожил");
+};
+$("feed").onclick = () => {
+  if (state.food.length > 60) return toast("Корма пока достаточно.");
+  for (let i = 0; i < 12; i++)
+    state.food.push({
+      pos: [(rng() - 0.5) * 8, 2.5 + rng() * 0.6, (rng() - 0.5) * 4],
+      life: 40,
+    });
+  toast(
+    state.paused
+      ? "Корм добавлен. Продолжи движение, чтобы рыбы его заметили."
+      : "Немного корма уже в воде",
+  );
+};
+$("resetCamera").onclick = () => {
+  state.camera = { yaw: 0, pitch: 0.1, distance: 16.6, target: [0, -0.1, 0] };
+  state.follow = false;
+  dirty();
+};
+$("hideUI").onclick = () => {
+  document.body.classList.add("immersive");
+  $("revealUI").hidden = false;
+};
+$("revealUI").onclick = () => {
+  document.body.classList.remove("immersive");
+  $("revealUI").hidden = true;
+};
+$("fullscreen").onclick = () =>
+  guard(async () => {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen)
+      await document.documentElement.requestFullscreen();
+    else
+      toast(
+        "Полный экран недоступен. Можно скрыть управление кнопкой с глазом.",
+      );
+  });
+$("closeSelection").onclick = () => selectFish(null);
+$("followFish").onclick = () => {
+  state.follow = !state.follow;
+  selectFish(state.selected);
+};
+$("editFish").onclick = () => {
+  const f = selected();
+  if (f)
+    openEditor(
+      state.species.find((s) => s.id === f.species),
+      f,
+    );
+};
+$("renameFish").onclick = () =>
+  guard(async () => {
+    const f = selected();
+    if (!f) return;
+    const n = await confirmAction("Как назвать этого обитателя?", f.name);
+    if (n) {
+      f.name = n.slice(0, 50);
+      dirty();
+      selectFish(f.id);
+    }
+  });
+$("duplicateFish").onclick = () =>
+  guard(() => {
+    const f = selected();
+    if (f) {
+      createFish(state, f.species);
+      dirty();
+      countUI();
+    }
+  });
+$("deleteFish").onclick = () =>
+  guard(async () => {
+    const f = selected();
+    if (f && (await confirmAction("Удалить этого обитателя?"))) {
+      state.fish = state.fish.filter((o) => o !== f);
+      selectFish(null);
+      dirty();
+      countUI();
+    }
+  });
+$("snapshot").onclick = () =>
+  guard(async () => {
+    const sel = state.selected;
+    state.selected = null;
+    try {
+      const blob = await renderer.snapshot();
+      if (snapshotURL) URL.revokeObjectURL(snapshotURL);
+      snapshotURL = URL.createObjectURL(blob);
+      $("snapshotImage").src = snapshotURL;
+      $("snapshotDownload").href = $("snapshotOpen").href = snapshotURL;
+      $("snapshotDialog").showModal();
+      toast("PNG подготовлен");
+    } finally {
+      state.selected = sel;
+    }
+  });
+// Orbit, pinch and picking; only canvas consumes gestures.
+const pointers = new Map();
+let startPointer = null,
+  pinchDistance = 0,
+  moved = false;
+$("ocean").addEventListener("pointerdown", (e) => {
+  pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  $("ocean").setPointerCapture(e.pointerId);
+  startPointer = [e.clientX, e.clientY];
+  moved = false;
+  if (pointers.size === 2) {
+    const a = [...pointers.values()];
+    pinchDistance = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]);
+  }
+});
+$("ocean").addEventListener("pointermove", (e) => {
+  if (!pointers.has(e.pointerId)) return;
+  const prev = pointers.get(e.pointerId);
+  pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (Math.hypot(e.clientX - startPointer[0], e.clientY - startPointer[1]) > 6)
+    moved = true;
+  if (pointers.size === 2) {
+    const a = [...pointers.values()],
+      d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]);
+    state.camera.distance = clamp(
+      state.camera.distance + (pinchDistance - d) * 0.025,
+      11,
+      24,
+    );
+    pinchDistance = d;
+    moved = true;
+  } else {
+    state.camera.yaw = clamp(
+      state.camera.yaw - (e.clientX - prev[0]) * 0.003,
+      -0.7,
+      0.7,
+    );
+    state.camera.pitch = clamp(
+      state.camera.pitch + (e.clientY - prev[1]) * 0.002,
+      -0.12,
+      0.45,
+    );
+  }
+  state.follow = false;
+  dirty();
+});
+$("ocean").addEventListener("pointerup", (e) => {
+  pointers.delete(e.pointerId);
+  if (!moved && renderer?.vp) {
+    const r = $("ocean").getBoundingClientRect();
+    let best = null,
+      dist = 36;
+    for (const f of state.fish.filter((f) => !f.hidden)) {
+      const p = project(renderer.vp, f.pos),
+        x = (p[0] * 0.5 + 0.5) * r.width,
+        y = (0.5 - p[1] * 0.5) * r.height,
+        d = Math.hypot(e.clientX - r.left - x, e.clientY - r.top - y);
+      if (p[3] > 0 && d < dist) {
+        best = f;
+        dist = d;
+      }
+    }
+    selectFish(best?.id || null);
+    if (best) state.impulses.push({ pos: [...best.pos], time });
+  }
+});
+$("ocean").addEventListener("pointercancel", (e) =>
+  pointers.delete(e.pointerId),
+);
+$("ocean").addEventListener(
+  "wheel",
+  (e) => {
+    e.preventDefault();
+    state.camera.distance = clamp(
+      state.camera.distance + e.deltaY * 0.008,
+      11,
+      24,
+    );
+    dirty();
+  },
+  { passive: false },
+);
+$("ocean").addEventListener("keydown", (e) => {
+  const c = state.camera;
+  if (e.key === "ArrowLeft") c.yaw = clamp(c.yaw - 0.06, -0.7, 0.7);
+  else if (e.key === "ArrowRight") c.yaw = clamp(c.yaw + 0.06, -0.7, 0.7);
+  else if (e.key === "ArrowUp") c.pitch = clamp(c.pitch + 0.04, -0.12, 0.45);
+  else if (e.key === "ArrowDown") c.pitch = clamp(c.pitch - 0.04, -0.12, 0.45);
+  else if (["+", "="].includes(e.key))
+    c.distance = clamp(c.distance - 1, 11, 24);
+  else if (e.key === "-") c.distance = clamp(c.distance + 1, 11, 24);
+  else return;
+  e.preventDefault();
+  dirty();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !document.querySelector("dialog[open]")) {
+    closeDrawer();
+    selectFish(null);
+    document.body.classList.remove("immersive");
+    $("revealUI").hidden = true;
+  }
+});
+let lastPausedRender = 0;
+function frame(now) {
+  raf = 0;
+  if (document.hidden) return;
+  if (state.paused && now - lastPausedRender < 150) {
+    last = now;
+    raf = requestAnimationFrame(frame);
+    return;
+  }
+  lastPausedRender = now;
+  const dt = last ? Math.min((now - last) / 1000, 0.1) : 0;
+  last = now;
+  try {
+    if (!state.paused && !renderer.lost) {
+      state.waterTime =
+        (state.waterTime ?? 0) + dt * (state.settings.waterSpeed ?? 1);
+      acc += dt * state.settings.speed;
+      let n = 0;
+      while (acc >= 1 / 60 && n++ < 6) {
+        time += 1 / 60;
+        simulate(state, 1 / 60, time);
+        acc -= 1 / 60;
+      }
+      if (n >= 6) acc = 0;
+    }
+    renderer.draw(state, assets, time);
+    if (draft && $("editor").open && previewRenderer) {
+      previewRenderer.draw(
+        {
+          ...state,
+          species: [draft],
+          camera: state.camera,
+          previewYaw,
+          selected: null,
+        },
+        assets,
+        time,
+        {
+          id: "preview",
+          species: draft.id,
+          pos: [0, 0, 0],
+          dir: [1, 0, 0],
+          size: 1,
+          phase: 0,
+          vel: [0.6, 0, 0],
+        },
+      );
+    }
+    if (dt > 0) {
+      frameMS = mix(frameMS, dt * 1000, 0.04);
+      if (
+        ++qualityFrames > 240 &&
+        state.settings.quality === "auto" &&
+        frameMS > 45 &&
+        state.effectiveQuality > 0
+      ) {
+        state.effectiveQuality--;
+        qualityFrames = 0;
+        toast("Графика облегчена для плавности");
+      }
+    }
+  } catch (e) {
+    toast(e.message);
+    console.error(e);
+    state.paused = true;
+  }
+  raf = requestAnimationFrame(frame);
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    last = 0;
+    acc = 0;
+  } else if (!raf) {
+    last = 0;
+    raf = requestAnimationFrame(frame);
+  }
+});
+reduced.addEventListener("change", (e) => {
+  if (e.matches) {
+    state.paused = true;
+    countUI();
+  }
+});
+window.addEventListener("beforeunload", (e) => {
+  if (state.dirty) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+document.querySelectorAll("dialog").forEach((d) => {
+  d.addEventListener("focusin", (e) => {
+    if (e.target.matches("input,select,summary"))
+      e.target.scrollIntoView({ block: "nearest" });
+  });
+});
+async function boot() {
+  try {
+    renderer = new Renderer($("ocean"), { onError: toast });
+    populate(state);
+    quality();
+    countUI();
+    renderer.draw(state, assets, 0);
+    $("loadScreen").hidden = true;
+    raf = requestAnimationFrame(frame);
+    try {
+      const saved = await dbAction("get");
+      if (saved)
+        toast("Найден сохранённый проект. Открой «Проект» → «Восстановить».");
+    } catch {}
+  } catch (e) {
+    $("loadText").textContent = e.message;
+    $("loadRetry").hidden = false;
+    console.error(e);
+  }
+}
+window.AquaMorph = {
+  get state() {
+    return state;
+  },
+  get assets() {
+    return assets;
+  },
+  get renderer() {
+    return renderer;
+  },
+  validateProject,
+  packProject,
+  openEditor,
+  simulate,
+  diagnostics: () => ({
+    ...renderer?.diagnostics(),
+    fps: Math.round(1000 / frameMS),
+    paused: state.paused,
+  }),
+};
+boot();
+</script></body></html>
